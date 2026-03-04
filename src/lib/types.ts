@@ -14,6 +14,8 @@ export interface CycleData {
   percentNonDefective: number; // percentage 0-1
   avgWeightPerWetCocoon: number; // grams
   avgShellRatio: number; // percentage 0-1
+  totalEggs?: number; // total eggs laid
+  hatchRatePercent?: number; // hatch rate as percentage 0-1
 }
 
 export interface ComputedKPIs {
@@ -26,6 +28,7 @@ export interface ComputedKPIs {
   wormToWetCocoonConversion: number;
   overallFeedConversion: number;
   noOfWorms: number;
+  totalWormCount: number; // computed: totalEggs * hatchRate
 }
 
 export interface KPISummary {
@@ -37,6 +40,9 @@ export interface KPISummary {
   rearableCapacityUtilization: number;
   avgShellRatio: number;
   avgCocoonWeight: number;
+  totalEggs: number;
+  totalWorms: number;
+  avgHatchRate: number;
 }
 
 export interface MulberryPlot {
@@ -48,6 +54,9 @@ export interface MulberryPlot {
   dateLastHarvested: string;
   nextEarliestHarvestDate: string;
   irrigated: boolean;
+  leaseStatus?: string;
+  expectedYieldPerAcre?: number;
+  cropAge?: number; // months
 }
 
 export interface YieldSample {

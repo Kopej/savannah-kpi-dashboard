@@ -1,19 +1,23 @@
 import { useMemo, useState } from 'react';
 import { useAppState } from '@/lib/store';
-import { computeYieldAverages, computeYieldPredictions, formatNumber, formatKg } from '@/lib/calculations';
+import { computeYieldAverages, computeYieldPredictions, formatNumber, formatKg, getActiveCycles } from '@/lib/calculations';
 import { KPICard } from '@/components/KPICard';
 import { YieldMappingForm } from '@/components/YieldMappingForm';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, LineChart, Line } from 'recharts';
+import { AddPlotDialog } from '@/components/AddPlotDialog';
+import { DemandForecastWidget } from '@/components/DemandForecastWidget';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Leaf, TreePine, Map, TrendingUp, Download, Plus } from 'lucide-react';
+import { Leaf, TreePine, Map, TrendingUp, Download, Plus, MapPin } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { motion } from 'framer-motion';
 
 export default function MulberryPipeline() {
-  const { plots, yieldSamples, assumptions } = useAppState();
+  const { plots, yieldSamples, assumptions, cycles } = useAppState();
   const [formOpen, setFormOpen] = useState(false);
+  const [plotOpen, setPlotOpen] = useState(false);
 
+  const activeCycles = useMemo(() => getActiveCycles(cycles), [cycles]);
   const yieldAverages = useMemo(() => computeYieldAverages(yieldSamples, plots), [yieldSamples, plots]);
   const predictions = useMemo(() => computeYieldPredictions(plots, assumptions), [plots, assumptions]);
 
@@ -59,6 +63,10 @@ export default function MulberryPipeline() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button onClick={() => setPlotOpen(true)} variant="outline">
+            <MapPin className="h-4 w-4 mr-2" />
+            Add Plot
+          </Button>
           <Button onClick={() => setFormOpen(true)} className="kpi-gradient border-0 text-primary-foreground">
             <Plus className="h-4 w-4 mr-2" />
             Add Yield Data
@@ -77,6 +85,9 @@ export default function MulberryPipeline() {
         <KPICard title="Est. Yield / Harvest" value={formatKg(totalEstimatedYield)} icon={Leaf} delay={0.1} />
         <KPICard title="DFL Capacity" value={formatNumber(Math.round(totalDFLCapacity))} subtitle="Per harvest cycle" icon={TrendingUp} delay={0.15} />
       </div>
+
+      {/* 250 DFL Demand Forecast */}
+      <DemandForecastWidget activeCycles={activeCycles} plots={plots} assumptions={assumptions} />
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -119,6 +130,7 @@ export default function MulberryPipeline() {
                 <TableHead>Trees</TableHead>
                 <TableHead>Transplanted</TableHead>
                 <TableHead>Irrigated</TableHead>
+                <TableHead>Lease</TableHead>
                 <TableHead>Est. Yield (kg)</TableHead>
                 <TableHead>DFL Capacity</TableHead>
                 <TableHead>Yield/Acre/Yr (MT)</TableHead>
@@ -134,6 +146,7 @@ export default function MulberryPipeline() {
                     <TableCell>{formatNumber(plot.treePopulation)}</TableCell>
                     <TableCell>{plot.dateTransplanted}</TableCell>
                     <TableCell>{plot.irrigated ? '✅' : '—'}</TableCell>
+                    <TableCell>{plot.leaseStatus || 'Active'}</TableCell>
                     <TableCell>{formatNumber(p.expectedYieldKg)}</TableCell>
                     <TableCell>{p.rearingCapacityDFL}</TableCell>
                     <TableCell>{(p.projectedYieldPerAcrePerYear / 1000).toFixed(1)}</TableCell>
@@ -146,6 +159,7 @@ export default function MulberryPipeline() {
       </div>
 
       <YieldMappingForm open={formOpen} onOpenChange={setFormOpen} />
+      <AddPlotDialog open={plotOpen} onOpenChange={setPlotOpen} />
     </div>
   );
 }

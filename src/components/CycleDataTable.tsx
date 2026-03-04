@@ -33,10 +33,11 @@ export function CycleDataTable({ cyclesWithKPIs }: Props) {
   };
 
   const exportCSV = () => {
-    const headers = ['Cycle', 'Hatch Date', 'Eggs', 'Hatched', 'Hatch Rate', 'Mortality', 'Cocoon Wt (kg)', 'Shell Ratio', 'Cocoon Wt (g)', 'Productivity (kg/acre)'];
+    const headers = ['Cycle', 'Hatch Date', 'Total Eggs', 'Hatched', 'Hatch Rate', 'Total Worms', 'Mortality', 'Cocoon Wt (kg)', 'Shell Ratio', 'Cocoon Wt (g)', 'Productivity (kg/acre)'];
     const rows = filtered.map(c => [
-      c.cycleNumber, c.hatchDate, c.estimatedStartingEggCount, c.hatchedEggs,
-      formatPercent(c.kpis.hatchRate), formatPercent(c.kpis.totalMortality),
+      c.cycleNumber, c.hatchDate, c.totalEggs || c.estimatedStartingEggCount, c.hatchedEggs,
+      formatPercent(c.kpis.hatchRate), c.kpis.totalWormCount,
+      formatPercent(c.kpis.totalMortality),
       c.totalHarvestedWetCocoonWeight, formatPercent(c.avgShellRatio),
       c.avgWeightPerWetCocoon, c.kpis.reelableWetCocoonsProductivity.toFixed(1),
     ]);
@@ -51,7 +52,7 @@ export function CycleDataTable({ cyclesWithKPIs }: Props) {
   return (
     <div className="glass-card rounded-xl p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-foreground font-display">Cycle Data Breakdown</h3>
+        <h3 className="text-sm font-semibold text-foreground font-display">Active Cycle Data Breakdown</h3>
         <div className="flex items-center gap-2">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
@@ -76,16 +77,16 @@ export function CycleDataTable({ cyclesWithKPIs }: Props) {
                 Cycle <ArrowUpDown className="inline h-3 w-3 ml-1" />
               </TableHead>
               <TableHead>Hatch Date</TableHead>
-              <TableHead>Eggs</TableHead>
+              <TableHead>Total Eggs</TableHead>
               <TableHead>Hatched</TableHead>
               <TableHead>Hatch Rate</TableHead>
+              <TableHead>Total Worms</TableHead>
               <TableHead>Mortality</TableHead>
               <TableHead className="cursor-pointer" onClick={() => toggleSort('totalHarvestedWetCocoonWeight')}>
                 Cocoon Wt <ArrowUpDown className="inline h-3 w-3 ml-1" />
               </TableHead>
               <TableHead>Shell %</TableHead>
               <TableHead>Wt/Cocoon</TableHead>
-              <TableHead>Prod. (kg/ac)</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -93,14 +94,14 @@ export function CycleDataTable({ cyclesWithKPIs }: Props) {
               <TableRow key={c.id}>
                 <TableCell className="font-medium">Cycle {c.cycleNumber}</TableCell>
                 <TableCell>{c.hatchDate}</TableCell>
-                <TableCell>{formatNumber(c.estimatedStartingEggCount)}</TableCell>
+                <TableCell>{formatNumber(c.totalEggs || c.estimatedStartingEggCount)}</TableCell>
                 <TableCell>{formatNumber(c.hatchedEggs)}</TableCell>
                 <TableCell>{formatPercent(c.kpis.hatchRate)}</TableCell>
+                <TableCell>{formatNumber(c.kpis.totalWormCount)}</TableCell>
                 <TableCell>{formatPercent(c.kpis.totalMortality)}</TableCell>
                 <TableCell>{formatKg(c.totalHarvestedWetCocoonWeight)}</TableCell>
                 <TableCell>{formatPercent(c.avgShellRatio)}</TableCell>
                 <TableCell>{c.avgWeightPerWetCocoon}g</TableCell>
-                <TableCell>{c.kpis.reelableWetCocoonsProductivity.toFixed(1)}</TableCell>
               </TableRow>
             ))}
           </TableBody>

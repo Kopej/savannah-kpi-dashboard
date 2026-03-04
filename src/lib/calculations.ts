@@ -19,6 +19,21 @@ export const DEFAULT_ASSUMPTIONS: Assumptions = {
   wetCocoonToReeledSilkConversion: 0.25,
 };
 
+// Number of active cycles to show on dashboard
+export const ACTIVE_CYCLE_COUNT = 5;
+
+// Get active cycles (last N by cycle number)
+export function getActiveCycles(cycles: CycleData[], count: number = ACTIVE_CYCLE_COUNT): CycleData[] {
+  const sorted = [...cycles].sort((a, b) => a.cycleNumber - b.cycleNumber);
+  return sorted.slice(-count);
+}
+
+// Get archived cycles (all except last N)
+export function getArchivedCycles(cycles: CycleData[], count: number = ACTIVE_CYCLE_COUNT): CycleData[] {
+  const sorted = [...cycles].sort((a, b) => a.cycleNumber - b.cycleNumber);
+  return sorted.slice(0, Math.max(0, sorted.length - count));
+}
+
 // Compute KPIs for a single cycle — mirrors Excel formulas row by row
 export function computeCycleKPIs(cycle: CycleData, assumptions: Assumptions = DEFAULT_ASSUMPTIONS): ComputedKPIs {
   const hatchRate = cycle.estimatedStartingEggCount > 0
@@ -29,29 +44,27 @@ export function computeCycleKPIs(cycle: CycleData, assumptions: Assumptions = DE
 
   const noOfWorms = Math.round(cycle.hatchedEggs * (1 - totalMortality));
 
-  // Reelable wet cocoons = total harvested * % non-defective
+  // Total worm count from totalEggs field
+  const totalEggs = cycle.totalEggs || cycle.estimatedStartingEggCount;
+  const hatchRateForWorms = cycle.hatchRatePercent || hatchRate;
+  const totalWormCount = Math.round(totalEggs * hatchRateForWorms);
+
   const reelableWetCocoons = cycle.totalHarvestedWetCocoonWeight * cycle.percentNonDefective;
 
-  // Leaf fed in KG
   const leafFedKg = cycle.totalLeafWeightFed / 1000;
 
-  // Productivity per acre = reelable cocoons / (leafFedKg / kgLeafShootPerAcrePerHarvest)
   const acresUsed = leafFedKg / assumptions.kgLeafShootPerAcrePerHarvest;
   const reelableWetCocoonsProductivity = acresUsed > 0 ? reelableWetCocoons / acresUsed : 0;
 
-  // KG reeled silk per acre = productivity * conversion factor
   const kgReeledSilkPerAcre = reelableWetCocoonsProductivity * assumptions.wetCocoonToReeledSilkConversion;
 
-  // Feed to final worm weight conversion = leafFedKg / (noOfWorms * finalLarvaeWeight / 1000)
   const totalWormWeightKg = (noOfWorms * cycle.finalLarvaeWeight) / 1000;
   const feedToFinalWormWeightConversion = totalWormWeightKg > 0 ? leafFedKg / totalWormWeightKg : 0;
 
-  // Worm to wet cocoon weight conversion = totalWormWeightKg / totalHarvestedCocoonKg
   const wormToWetCocoonConversion = cycle.totalHarvestedWetCocoonWeight > 0
     ? totalWormWeightKg / cycle.totalHarvestedWetCocoonWeight
     : 0;
 
-  // Overall feed conversion = leafFedKg / totalHarvestedCocoonKg
   const overallFeedConversion = cycle.totalHarvestedWetCocoonWeight > 0
     ? leafFedKg / cycle.totalHarvestedWetCocoonWeight
     : 0;
@@ -60,6 +73,7 @@ export function computeCycleKPIs(cycle: CycleData, assumptions: Assumptions = DE
     hatchRate,
     totalMortality,
     noOfWorms,
+    totalWormCount,
     reelableWetCocoons,
     reelableWetCocoonsProductivity,
     kgReeledSilkPerAcre,
@@ -69,10 +83,10 @@ export function computeCycleKPIs(cycle: CycleData, assumptions: Assumptions = DE
   };
 }
 
-// Compute aggregate summary KPIs across all cycles
+// Compute aggregate summary KPIs across cycles
 export function computeSummaryKPIs(cycles: CycleData[], assumptions: Assumptions = DEFAULT_ASSUMPTIONS): KPISummary {
   if (cycles.length === 0) {
-    return { avgYieldPerDFL: 0, avgSurvivalRate: 0, totalCocoons: 0, totalDFLsBrushed: 0, totalProduction: 0, rearableCapacityUtilization: 0, avgShellRatio: 0, avgCocoonWeight: 0 };
+    return { avgYieldPerDFL: 0, avgSurvivalRate: 0, totalCocoons: 0, totalDFLsBrushed: 0, totalProduction: 0, rearableCapacityUtilization: 0, avgShellRatio: 0, avgCocoonWeight: 0, totalEggs: 0, totalWorms: 0, avgHatchRate: 0 };
   }
 
   const allKPIs = cycles.map(c => computeCycleKPIs(c, assumptions));
@@ -103,16 +117,33 @@ export function computeSummaryKPIs(cycles: CycleData[], assumptions: Assumptions
     ? validWeight.reduce((s, c) => s + c.avgWeightPerWetCocoon, 0) / validWeight.length
     : 0;
 
+  const totalEggs = cycles.reduce((s, c) => s + (c.totalEggs || c.estimatedStartingEggCount), 0);
+  const totalWorms = allKPIs.reduce((s, k) => s + k.totalWormCount, 0);
+  const avgHatchRate = allKPIs.length > 0
+    ? allKPIs.reduce((s, k) => s + k.hatchRate, 0) / allKPIs.length
+    : 0;
+
   return {
     avgYieldPerDFL,
     avgSurvivalRate,
     totalCocoons,
     totalDFLsBrushed,
     totalProduction,
-    rearableCapacityUtilization: 0, // computed separately with mulberry data
+    rearableCapacityUtilization: 0,
     avgShellRatio,
     avgCocoonWeight,
+    totalEggs,
+    totalWorms,
+    avgHatchRate,
   };
+}
+
+// Calculate average mulberry consumption per DFL from given cycles
+export function computeAvgLeafPerDFL(cycles: CycleData[], assumptions: Assumptions): number {
+  if (cycles.length === 0) return assumptions.leafWeightPerDFL;
+  const totalLeafKg = cycles.reduce((s, c) => s + c.totalLeafWeightFed / 1000, 0);
+  const totalDFLs = cycles.reduce((s, c) => s + Math.round(c.hatchedEggs / assumptions.wormsPerDFL), 0);
+  return totalDFLs > 0 ? totalLeafKg / totalDFLs : assumptions.leafWeightPerDFL;
 }
 
 // Compute yield averages from raw sampling data
@@ -162,7 +193,6 @@ export function computeYieldPredictions(
     const expectedYieldKg = (plot.treePopulation * projectedYieldPerTree) / 1000;
     const rearingCapacityDFL = expectedYieldKg / assumptions.leafWeightPerDFL;
     const plotProductivityPerAcre = plot.acreage > 0 ? expectedYieldKg / plot.acreage : 0;
-    // 9 harvests per year assumption
     const projectedYieldPerAcrePerYear = plotProductivityPerAcre * 9;
 
     return {
@@ -176,7 +206,7 @@ export function computeYieldPredictions(
   });
 }
 
-// Compute monthly expected yields per plot (from Excel pipeline sheet)
+// Compute monthly expected yields per plot
 export function computeMonthlyYields(
   plots: MulberryPlot[],
   assumptions: Assumptions = DEFAULT_ASSUMPTIONS
@@ -186,7 +216,7 @@ export function computeMonthlyYields(
 
   plots.forEach(plot => {
     const harvestDate = new Date(plot.nextEarliestHarvestDate);
-    const yieldPerHarvest = (plot.treePopulation * 750) / 1000; // kg based on target
+    const yieldPerHarvest = (plot.treePopulation * 750) / 1000;
 
     result[plot.name] = months.map((m, i) => {
       const [mon, yr] = m.split('-');

@@ -15,6 +15,8 @@ interface Props {
 const defaultValues = {
   cycleNumber: '',
   hatchDate: '',
+  totalEggs: '',
+  hatchRatePercent: '',
   estimatedStartingEggCount: '',
   hatchedEggs: '',
   mortalityPreCocooning: '',
@@ -33,12 +35,19 @@ export function AddCycleDialog({ open, onOpenChange }: Props) {
 
   const set = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
 
+  // Computed preview
+  const totalEggs = parseFloat(form.totalEggs) || 0;
+  const hatchRate = parseFloat(form.hatchRatePercent) || 0;
+  const computedWorms = Math.round(totalEggs * (hatchRate / 100));
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const cycle: CycleData = {
       id: Math.random().toString(36).slice(2, 10),
       cycleNumber: parseInt(form.cycleNumber),
       hatchDate: form.hatchDate,
+      totalEggs: parseInt(form.totalEggs) || undefined,
+      hatchRatePercent: parseFloat(form.hatchRatePercent) ? parseFloat(form.hatchRatePercent) / 100 : undefined,
       estimatedStartingEggCount: parseInt(form.estimatedStartingEggCount),
       hatchedEggs: parseInt(form.hatchedEggs),
       mortalityPreCocooning: parseFloat(form.mortalityPreCocooning) / 100,
@@ -59,6 +68,8 @@ export function AddCycleDialog({ open, onOpenChange }: Props) {
   const fields = [
     { key: 'cycleNumber', label: 'Cycle Number', type: 'number', placeholder: 'e.g. 15' },
     { key: 'hatchDate', label: 'Hatch Date', type: 'date', placeholder: '' },
+    { key: 'totalEggs', label: 'Total Eggs', type: 'number', placeholder: 'e.g. 30000' },
+    { key: 'hatchRatePercent', label: 'Hatch Rate (%)', type: 'number', placeholder: 'e.g. 85' },
     { key: 'estimatedStartingEggCount', label: 'Starting Egg Count', type: 'number', placeholder: 'e.g. 28000' },
     { key: 'hatchedEggs', label: 'Hatched Eggs', type: 'number', placeholder: 'e.g. 26500' },
     { key: 'mortalityPreCocooning', label: 'Mortality Pre-Cocooning (%)', type: 'number', placeholder: 'e.g. 2' },
@@ -79,7 +90,7 @@ export function AddCycleDialog({ open, onOpenChange }: Props) {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-3">
           {fields.map(f => (
-            <div key={f.key} className={f.key === 'hatchDate' ? 'col-span-1' : ''}>
+            <div key={f.key}>
               <Label className="text-xs text-muted-foreground">{f.label}</Label>
               <Input
                 type={f.type}
@@ -87,11 +98,17 @@ export function AddCycleDialog({ open, onOpenChange }: Props) {
                 placeholder={f.placeholder}
                 value={(form as any)[f.key]}
                 onChange={e => set(f.key, e.target.value)}
-                required
+                required={!['totalEggs', 'hatchRatePercent'].includes(f.key)}
                 className="mt-1 h-9 text-sm"
               />
             </div>
           ))}
+          {/* Computed worm count preview */}
+          {totalEggs > 0 && hatchRate > 0 && (
+            <div className="col-span-2 bg-accent/50 rounded-lg px-3 py-2">
+              <p className="text-xs text-muted-foreground">Computed Total Worms: <span className="font-semibold text-foreground">{computedWorms.toLocaleString()}</span></p>
+            </div>
+          )}
           <div className="col-span-2 mt-2">
             <Button type="submit" className="w-full kpi-gradient border-0 text-primary-foreground">
               Save & Recalculate KPIs
