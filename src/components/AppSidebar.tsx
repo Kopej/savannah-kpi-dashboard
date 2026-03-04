@@ -1,5 +1,4 @@
 import { NavLink } from '@/components/NavLink';
-import { useLocation } from 'react-router-dom';
 import {
   Sidebar,
   SidebarContent,
@@ -13,11 +12,12 @@ import {
   SidebarFooter,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { BarChart3, Leaf, MessageSquare, LogIn, UserPlus, Settings } from 'lucide-react';
+import { BarChart3, Leaf, MessageSquare, LogIn, UserPlus, Map } from 'lucide-react';
 
 const mainItems = [
   { title: 'KPI Dashboard', url: '/', icon: BarChart3 },
   { title: 'Mulberry Pipeline', url: '/mulberry', icon: Leaf },
+  { title: 'Roadmap', url: '/roadmap', icon: Map },
   { title: 'Feedback', url: '/feedback', icon: MessageSquare },
 ];
 

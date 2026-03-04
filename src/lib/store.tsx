@@ -14,13 +14,14 @@ interface AppState {
   addYieldSample: (sample: YieldSample) => void;
   addTicket: (ticket: Ticket) => void;
   updateTicket: (id: string, updates: Partial<Ticket>) => void;
+  addPlot: (plot: MulberryPlot) => void;
 }
 
 const AppContext = createContext<AppState | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [cycles, setCycles] = useState<CycleData[]>(SEED_CYCLES);
-  const [plots] = useState<MulberryPlot[]>(SEED_PLOTS);
+  const [plots, setPlots] = useState<MulberryPlot[]>(SEED_PLOTS);
   const [yieldSamples, setYieldSamples] = useState<YieldSample[]>(SEED_YIELD_SAMPLES);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [assumptions] = useState<Assumptions>(DEFAULT_ASSUMPTIONS);
@@ -41,8 +42,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setTickets(prev => prev.map(t => t.id === id ? { ...t, ...updates, updatedAt: new Date().toISOString() } : t));
   }, []);
 
+  const addPlot = useCallback((plot: MulberryPlot) => {
+    setPlots(prev => [...prev, plot]);
+  }, []);
+
   return (
-    <AppContext.Provider value={{ cycles, plots, yieldSamples, tickets, assumptions, addCycle, addYieldSample, addTicket, updateTicket }}>
+    <AppContext.Provider value={{ cycles, plots, yieldSamples, tickets, assumptions, addCycle, addYieldSample, addTicket, updateTicket, addPlot }}>
       {children}
     </AppContext.Provider>
   );

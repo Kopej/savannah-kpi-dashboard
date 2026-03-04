@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import type { CycleData, ComputedKPIs } from '@/lib/types';
-import { formatPercent } from '@/lib/calculations';
 
 interface Props {
   cyclesWithKPIs: (CycleData & { kpis: ComputedKPIs })[];
@@ -18,6 +17,8 @@ export function KPICharts({ cyclesWithKPIs }: Props) {
       shellRatio: Math.round(c.avgShellRatio * 100),
       larvaeWeight: c.finalLarvaeWeight,
       productivity: Math.round(c.kpis.reelableWetCocoonsProductivity * 10) / 10,
+      totalEggs: c.totalEggs || c.estimatedStartingEggCount,
+      totalWorms: c.kpis.totalWormCount,
     })),
     [cyclesWithKPIs]
   );
@@ -80,17 +81,19 @@ export function KPICharts({ cyclesWithKPIs }: Props) {
         </ResponsiveContainer>
       </div>
 
-      {/* Larvae Weight */}
+      {/* Egg & Worm Count */}
       <div className="glass-card rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-foreground mb-4 font-display">Final Larvae Weight (g)</h3>
+        <h3 className="text-sm font-semibold text-foreground mb-4 font-display">Total Eggs & Worm Count</h3>
         <ResponsiveContainer width="100%" height={260}>
-          <LineChart data={chartData}>
+          <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(170 15% 88%)" />
             <XAxis dataKey="cycle" tick={{ fontSize: 11 }} />
-            <YAxis tick={{ fontSize: 11 }} domain={[0, 5]} />
+            <YAxis tick={{ fontSize: 11 }} />
             <Tooltip {...tooltipStyle} />
-            <Line type="monotone" dataKey="larvaeWeight" stroke="hsl(280, 65%, 60%)" strokeWidth={2} dot={{ r: 4 }} name="Larvae Weight (g)" />
-          </LineChart>
+            <Legend wrapperStyle={{ fontSize: 11 }} />
+            <Bar dataKey="totalEggs" fill="hsl(199, 89%, 48%)" radius={[4, 4, 0, 0]} name="Total Eggs" />
+            <Bar dataKey="totalWorms" fill="hsl(152, 45%, 45%)" radius={[4, 4, 0, 0]} name="Total Worms" />
+          </BarChart>
         </ResponsiveContainer>
       </div>
     </div>
