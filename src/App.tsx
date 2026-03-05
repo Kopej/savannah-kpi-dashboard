@@ -6,9 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { AppProvider } from "@/lib/store";
 import KPIDashboard from "./pages/KPIDashboard";
-import MulberryPipeline from "./pages/MulberryPipeline";
 import FeedbackPage from "./pages/FeedbackPage";
-import RoadmapPage from "./pages/RoadmapPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import NotFound from "./pages/NotFound";
@@ -26,8 +24,6 @@ const App = () => (
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/" element={<AppLayout><KPIDashboard /></AppLayout>} />
-            <Route path="/mulberry" element={<AppLayout><MulberryPipeline /></AppLayout>} />
-            <Route path="/roadmap" element={<AppLayout><RoadmapPage /></AppLayout>} />
             <Route path="/feedback" element={<AppLayout><FeedbackPage /></AppLayout>} />
             <Route path="*" element={<NotFound />} />
           </Routes>

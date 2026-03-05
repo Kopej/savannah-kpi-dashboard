@@ -1,16 +1,18 @@
 import { motion } from 'framer-motion';
 import { LucideIcon } from 'lucide-react';
+import { TrafficLight, getTrafficLightDot, getTrafficLightBg } from '@/lib/kpiThresholds';
 
 interface KPICardProps {
   title: string;
   value: string;
   subtitle?: string;
+  target?: string;
   icon: LucideIcon;
-  trend?: 'up' | 'down' | 'neutral';
+  trafficLight?: TrafficLight;
   delay?: number;
 }
 
-export function KPICard({ title, value, subtitle, icon: Icon, trend, delay = 0 }: KPICardProps) {
+export function KPICard({ title, value, subtitle, target, icon: Icon, trafficLight, delay = 0 }: KPICardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -20,9 +22,19 @@ export function KPICard({ title, value, subtitle, icon: Icon, trend, delay = 0 }
     >
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">{title}</p>
+          <div className="flex items-center gap-2">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">{title}</p>
+            {trafficLight && (
+              <span className={`inline-block h-2.5 w-2.5 rounded-full shrink-0 ${getTrafficLightDot(trafficLight)}`} />
+            )}
+          </div>
           <p className="text-2xl font-bold text-foreground mt-1 font-display">{value}</p>
-          {subtitle && (
+          {target && (
+            <p className={`text-xs mt-1 font-medium ${trafficLight ? getTrafficLightBg(trafficLight) + ' inline-block px-2 py-0.5 rounded-full' : 'text-muted-foreground'}`}>
+              <span className="text-muted-foreground">Target: {target}</span>
+            </p>
+          )}
+          {subtitle && !target && (
             <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
           )}
         </div>
@@ -30,13 +42,6 @@ export function KPICard({ title, value, subtitle, icon: Icon, trend, delay = 0 }
           <Icon className="h-5 w-5 text-accent-foreground" />
         </div>
       </div>
-      {trend && (
-        <div className="mt-3 flex items-center gap-1">
-          <span className={`text-xs font-medium ${trend === 'up' ? 'text-success' : trend === 'down' ? 'text-destructive' : 'text-muted-foreground'}`}>
-            {trend === 'up' ? '↑ Improving' : trend === 'down' ? '↓ Declining' : '— Stable'}
-          </span>
-        </div>
-      )}
     </motion.div>
   );
 }
