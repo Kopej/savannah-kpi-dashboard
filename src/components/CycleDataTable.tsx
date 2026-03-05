@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import type { CycleData, ComputedKPIs } from '@/lib/types';
 import { formatPercent, formatNumber, formatKg } from '@/lib/calculations';
+import { getTrafficLight, getTrafficLightDot } from '@/lib/kpiThresholds';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,11 @@ import { ArrowUpDown, Download, Search } from 'lucide-react';
 
 interface Props {
   cyclesWithKPIs: (CycleData & { kpis: ComputedKPIs })[];
+}
+
+function StatusDot({ thresholdKey, value }: { thresholdKey: string; value: number }) {
+  const light = getTrafficLight(value, thresholdKey);
+  return <span className={`inline-block h-2 w-2 rounded-full ml-1 ${getTrafficLightDot(light)}`} />;
 }
 
 export function CycleDataTable({ cyclesWithKPIs }: Props) {
@@ -33,14 +39,18 @@ export function CycleDataTable({ cyclesWithKPIs }: Props) {
   };
 
   const exportCSV = () => {
-    const headers = ['Cycle', 'Hatch Date', 'Total Eggs', 'Hatched', 'Hatch Rate', 'Total Worms', 'Mortality', 'Cocoon Wt (kg)', 'Shell Ratio', 'Cocoon Wt (g)', 'Productivity (kg/acre)'];
-    const rows = filtered.map(c => [
-      c.cycleNumber, c.hatchDate, c.totalEggs || c.estimatedStartingEggCount, c.hatchedEggs,
-      formatPercent(c.kpis.hatchRate), c.kpis.totalWormCount,
-      formatPercent(c.kpis.totalMortality),
-      c.totalHarvestedWetCocoonWeight, formatPercent(c.avgShellRatio),
-      c.avgWeightPerWetCocoon, c.kpis.reelableWetCocoonsProductivity.toFixed(1),
-    ]);
+    const headers = ['Cycle', 'Hatch Date', 'Eggs', 'Hatched', 'Hatch Rate', 'Worms', 'Survival', 'Worm Wt (g)', 'Cocoon Wt (kg)', 'Shell %', 'Wt/Cocoon (g)', 'Yield/DFL (g)'];
+    const rows = filtered.map(c => {
+      const dfl = Math.round(c.hatchedEggs / 500);
+      const yieldPerDFL = dfl > 0 ? (c.totalHarvestedWetCocoonWeight / dfl * 1000).toFixed(0) : '0';
+      return [
+        c.cycleNumber, c.hatchDate, c.totalEggs || c.estimatedStartingEggCount, c.hatchedEggs,
+        formatPercent(c.kpis.hatchRate), c.kpis.totalWormCount,
+        formatPercent(1 - c.kpis.totalMortality), c.finalLarvaeWeight,
+        c.totalHarvestedWetCocoonWeight, formatPercent(c.avgShellRatio),
+        c.avgWeightPerWetCocoon, yieldPerDFL,
+      ];
+    });
     const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -52,7 +62,7 @@ export function CycleDataTable({ cyclesWithKPIs }: Props) {
   return (
     <div className="glass-card rounded-xl p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-foreground font-display">Active Cycle Data Breakdown</h3>
+        <h3 className="text-sm font-semibold text-foreground font-display">Cycle Performance Breakdown</h3>
         <div className="flex items-center gap-2">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
@@ -76,34 +86,54 @@ export function CycleDataTable({ cyclesWithKPIs }: Props) {
               <TableHead className="cursor-pointer" onClick={() => toggleSort('cycleNumber')}>
                 Cycle <ArrowUpDown className="inline h-3 w-3 ml-1" />
               </TableHead>
-              <TableHead>Hatch Date</TableHead>
-              <TableHead>Total Eggs</TableHead>
-              <TableHead>Hatched</TableHead>
+              <TableHead>Eggs</TableHead>
               <TableHead>Hatch Rate</TableHead>
-              <TableHead>Total Worms</TableHead>
-              <TableHead>Mortality</TableHead>
+              <TableHead>Worms</TableHead>
+              <TableHead>Survival</TableHead>
+              <TableHead>Worm Wt</TableHead>
               <TableHead className="cursor-pointer" onClick={() => toggleSort('totalHarvestedWetCocoonWeight')}>
-                Cocoon Wt <ArrowUpDown className="inline h-3 w-3 ml-1" />
+                Cocoons (kg) <ArrowUpDown className="inline h-3 w-3 ml-1" />
               </TableHead>
               <TableHead>Shell %</TableHead>
-              <TableHead>Wt/Cocoon</TableHead>
+              <TableHead>Cocoon Wt</TableHead>
+              <TableHead>Yield/DFL</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map(c => (
-              <TableRow key={c.id}>
-                <TableCell className="font-medium">Cycle {c.cycleNumber}</TableCell>
-                <TableCell>{c.hatchDate}</TableCell>
-                <TableCell>{formatNumber(c.totalEggs || c.estimatedStartingEggCount)}</TableCell>
-                <TableCell>{formatNumber(c.hatchedEggs)}</TableCell>
-                <TableCell>{formatPercent(c.kpis.hatchRate)}</TableCell>
-                <TableCell>{formatNumber(c.kpis.totalWormCount)}</TableCell>
-                <TableCell>{formatPercent(c.kpis.totalMortality)}</TableCell>
-                <TableCell>{formatKg(c.totalHarvestedWetCocoonWeight)}</TableCell>
-                <TableCell>{formatPercent(c.avgShellRatio)}</TableCell>
-                <TableCell>{c.avgWeightPerWetCocoon}g</TableCell>
-              </TableRow>
-            ))}
+            {filtered.map(c => {
+              const survivalRate = 1 - c.kpis.totalMortality;
+              const dfl = Math.round(c.hatchedEggs / 500);
+              const yieldPerDFL = dfl > 0 ? c.totalHarvestedWetCocoonWeight / dfl : 0;
+              return (
+                <TableRow key={c.id}>
+                  <TableCell className="font-medium">C{c.cycleNumber}</TableCell>
+                  <TableCell>{formatNumber(c.totalEggs || c.estimatedStartingEggCount)}</TableCell>
+                  <TableCell>
+                    {formatPercent(c.kpis.hatchRate)}
+                    <StatusDot thresholdKey="hatchRate" value={c.kpis.hatchRate} />
+                  </TableCell>
+                  <TableCell>{formatNumber(c.kpis.totalWormCount)}</TableCell>
+                  <TableCell>
+                    {formatPercent(survivalRate)}
+                    <StatusDot thresholdKey="survivalRate" value={survivalRate} />
+                  </TableCell>
+                  <TableCell>
+                    {c.finalLarvaeWeight}g
+                    <StatusDot thresholdKey="wormWeight" value={c.finalLarvaeWeight} />
+                  </TableCell>
+                  <TableCell>{formatKg(c.totalHarvestedWetCocoonWeight)}</TableCell>
+                  <TableCell>
+                    {formatPercent(c.avgShellRatio)}
+                    <StatusDot thresholdKey="shellRatio" value={c.avgShellRatio} />
+                  </TableCell>
+                  <TableCell>{c.avgWeightPerWetCocoon}g</TableCell>
+                  <TableCell>
+                    {(yieldPerDFL * 1000).toFixed(0)}g
+                    <StatusDot thresholdKey="yieldPerDFL" value={yieldPerDFL} />
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>
