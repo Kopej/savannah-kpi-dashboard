@@ -39,16 +39,16 @@ export function CycleDataTable({ cyclesWithKPIs }: Props) {
   };
 
   const exportCSV = () => {
-    const headers = ['Cycle', 'Hatch Date', 'Eggs', 'Hatched', 'Hatch Rate', 'Worms', 'Survival', 'Worm Wt (g)', 'Cocoon Wt (kg)', 'Shell %', 'Wt/Cocoon (g)', 'Yield/DFL (g)'];
+    const headers = ['Cycle', 'Hatch Date', 'Eggs', 'Hatched', 'Hatch Rate', 'Worms', 'Survival', 'Worm Wt (g)', 'Cocoon Wt (kg)', 'Shell %', 'Wt/Cocoon (g)', 'Yield/DFL (g)', 'Feed/kg Cocoon', 'Reelability'];
     const rows = filtered.map(c => {
-      const dfl = Math.round(c.hatchedEggs / 500);
-      const yieldPerDFL = dfl > 0 ? (c.totalHarvestedWetCocoonWeight / dfl * 1000).toFixed(0) : '0';
+      const yieldPerDFL = c.kpis.dflsBrushed > 0 ? (c.totalHarvestedWetCocoonWeight / c.kpis.dflsBrushed * 1000).toFixed(0) : '0';
       return [
         c.cycleNumber, c.hatchDate, c.totalEggs || c.estimatedStartingEggCount, c.hatchedEggs,
         formatPercent(c.kpis.hatchRate), c.kpis.totalWormCount,
         formatPercent(1 - c.kpis.totalMortality), c.finalLarvaeWeight,
         c.totalHarvestedWetCocoonWeight, formatPercent(c.avgShellRatio),
         c.avgWeightPerWetCocoon, yieldPerDFL,
+        c.kpis.leafShootPerKgWetCocoon.toFixed(1), formatPercent(c.kpis.reelability),
       ];
     });
     const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
@@ -66,16 +66,10 @@ export function CycleDataTable({ cyclesWithKPIs }: Props) {
         <div className="flex items-center gap-2">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-            <Input
-              placeholder="Search cycles..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="pl-8 h-9 w-48 text-sm"
-            />
+            <Input placeholder="Search cycles..." value={search} onChange={e => setSearch(e.target.value)} className="pl-8 h-9 w-48 text-sm" />
           </div>
           <Button variant="outline" size="sm" onClick={exportCSV}>
-            <Download className="h-3.5 w-3.5 mr-1.5" />
-            CSV
+            <Download className="h-3.5 w-3.5 mr-1.5" />CSV
           </Button>
         </div>
       </div>
@@ -97,13 +91,14 @@ export function CycleDataTable({ cyclesWithKPIs }: Props) {
               <TableHead>Shell %</TableHead>
               <TableHead>Cocoon Wt</TableHead>
               <TableHead>Yield/DFL</TableHead>
+              <TableHead>Feed/Cocoon</TableHead>
+              <TableHead>Reelability</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filtered.map(c => {
               const survivalRate = 1 - c.kpis.totalMortality;
-              const dfl = Math.round(c.hatchedEggs / 500);
-              const yieldPerDFL = dfl > 0 ? c.totalHarvestedWetCocoonWeight / dfl : 0;
+              const yieldPerDFL = c.kpis.dflsBrushed > 0 ? c.totalHarvestedWetCocoonWeight / c.kpis.dflsBrushed : 0;
               return (
                 <TableRow key={c.id}>
                   <TableCell className="font-medium">C{c.cycleNumber}</TableCell>
@@ -130,6 +125,15 @@ export function CycleDataTable({ cyclesWithKPIs }: Props) {
                   <TableCell>
                     {(yieldPerDFL * 1000).toFixed(0)}g
                     <StatusDot thresholdKey="yieldPerDFL" value={yieldPerDFL} />
+                  </TableCell>
+                  <TableCell>
+                    {c.kpis.leafShootPerKgWetCocoon > 0 && isFinite(c.kpis.leafShootPerKgWetCocoon)
+                      ? `${c.kpis.leafShootPerKgWetCocoon.toFixed(1)}x`
+                      : '—'}
+                  </TableCell>
+                  <TableCell>
+                    {c.kpis.reelability > 0 ? formatPercent(c.kpis.reelability) : '—'}
+                    {c.kpis.reelability > 0 && <StatusDot thresholdKey="nonDefective" value={c.kpis.reelability} />}
                   </TableCell>
                 </TableRow>
               );

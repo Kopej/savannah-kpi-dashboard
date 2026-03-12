@@ -18,16 +18,23 @@ export function KPICharts({ cyclesWithKPIs }: Props) {
       wormWeight: c.finalLarvaeWeight,
       totalEggs: c.totalEggs || c.estimatedStartingEggCount,
       totalWorms: c.kpis.totalWormCount,
+      feedPerCocoon: c.kpis.leafShootPerKgWetCocoon > 0 && isFinite(c.kpis.leafShootPerKgWetCocoon)
+        ? Math.round(c.kpis.leafShootPerKgWetCocoon * 10) / 10
+        : 0,
+      dflConversion: c.kpis.dflToWetCocoonKg > 0 ? Math.round(c.kpis.dflToWetCocoonKg * 1000) : 0,
+      reelability: Math.round(c.kpis.reelability * 100),
     })),
     [cyclesWithKPIs]
   );
 
-  // Compute averages for titles
-  const avgYield = chartData.length > 0 ? (chartData.reduce((s, d) => s + d.yield, 0) / chartData.length).toFixed(1) : '0';
-  const avgSurvival = chartData.length > 0 ? (chartData.reduce((s, d) => s + d.survival, 0) / chartData.length).toFixed(1) : '0';
-  const avgHatchRate = chartData.length > 0 ? (chartData.reduce((s, d) => s + d.hatchRate, 0) / chartData.length).toFixed(1) : '0';
-  const avgCocoonWt = chartData.length > 0 ? (chartData.reduce((s, d) => s + d.cocoonWeight, 0) / chartData.length).toFixed(2) : '0';
-  const avgWormWt = chartData.length > 0 ? (chartData.reduce((s, d) => s + d.wormWeight, 0) / chartData.length).toFixed(2) : '0';
+  const avg = (arr: number[]) => arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+  const avgYield = avg(chartData.map(d => d.yield)).toFixed(1);
+  const avgSurvival = avg(chartData.map(d => d.survival)).toFixed(1);
+  const avgHatchRate = avg(chartData.map(d => d.hatchRate)).toFixed(1);
+  const avgCocoonWt = avg(chartData.map(d => d.cocoonWeight)).toFixed(2);
+  const avgWormWt = avg(chartData.map(d => d.wormWeight)).toFixed(2);
+  const validFeed = chartData.filter(d => d.feedPerCocoon > 0);
+  const avgFeed = avg(validFeed.map(d => d.feedPerCocoon)).toFixed(1);
 
   const tooltipStyle = {
     contentStyle: {
@@ -40,7 +47,6 @@ export function KPICharts({ cyclesWithKPIs }: Props) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      {/* Yield over cycles */}
       <div className="glass-card rounded-xl p-5">
         <h3 className="text-sm font-semibold text-foreground mb-1 font-display">Yield per Cycle (kg)</h3>
         <p className="text-[10px] text-muted-foreground mb-4">Average: {avgYield} kg</p>
@@ -55,7 +61,6 @@ export function KPICharts({ cyclesWithKPIs }: Props) {
         </ResponsiveContainer>
       </div>
 
-      {/* Survival & Hatch Rate */}
       <div className="glass-card rounded-xl p-5">
         <h3 className="text-sm font-semibold text-foreground mb-1 font-display">Survival & Hatch Rate (%)</h3>
         <p className="text-[10px] text-muted-foreground mb-4">Avg Survival: {avgSurvival}% · Avg Hatch: {avgHatchRate}%</p>
@@ -72,7 +77,6 @@ export function KPICharts({ cyclesWithKPIs }: Props) {
         </ResponsiveContainer>
       </div>
 
-      {/* Cocoon Weight & Worm Weight */}
       <div className="glass-card rounded-xl p-5">
         <h3 className="text-sm font-semibold text-foreground mb-1 font-display">Cocoon Weight & Worm Weight (g)</h3>
         <p className="text-[10px] text-muted-foreground mb-4">Avg Cocoon: {avgCocoonWt}g · Avg Worm: {avgWormWt}g</p>
@@ -89,19 +93,16 @@ export function KPICharts({ cyclesWithKPIs }: Props) {
         </ResponsiveContainer>
       </div>
 
-      {/* Egg & Worm Count */}
       <div className="glass-card rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-foreground mb-1 font-display">Total Eggs & Worm Count</h3>
-        <p className="text-[10px] text-muted-foreground mb-4">Across {chartData.length} active cycles</p>
+        <h3 className="text-sm font-semibold text-foreground mb-1 font-display">Feed Conversion (kg leaf / kg cocoon)</h3>
+        <p className="text-[10px] text-muted-foreground mb-4">Average: {avgFeed} kg leaf per kg wet cocoon</p>
         <ResponsiveContainer width="100%" height={260}>
-          <BarChart data={chartData}>
+          <BarChart data={validFeed}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(170 15% 88%)" />
             <XAxis dataKey="cycle" tick={{ fontSize: 11 }} />
             <YAxis tick={{ fontSize: 11 }} />
             <Tooltip {...tooltipStyle} />
-            <Legend wrapperStyle={{ fontSize: 11 }} />
-            <Bar dataKey="totalEggs" fill="hsl(199, 89%, 48%)" radius={[4, 4, 0, 0]} name="Total Eggs" />
-            <Bar dataKey="totalWorms" fill="hsl(152, 45%, 45%)" radius={[4, 4, 0, 0]} name="Total Worms" />
+            <Bar dataKey="feedPerCocoon" fill="hsl(152, 45%, 45%)" radius={[4, 4, 0, 0]} name="kg Leaf / kg Cocoon" />
           </BarChart>
         </ResponsiveContainer>
       </div>
