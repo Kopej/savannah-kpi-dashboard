@@ -4,6 +4,7 @@ export interface CycleData {
   id: string;
   cycleNumber: number;
   hatchDate: string;
+  status: 'finished' | 'ongoing';
   estimatedStartingEggCount: number;
   hatchedEggs: number;
   mortalityPreCocooning: number; // percentage 0-1
@@ -28,7 +29,14 @@ export interface ComputedKPIs {
   wormToWetCocoonConversion: number;
   overallFeedConversion: number;
   noOfWorms: number;
-  totalWormCount: number; // computed: totalEggs * hatchRate
+  totalWormCount: number;
+  // New KPIs
+  leafShootPerKgWetCocoon: number; // kg leaf+shoot per kg wet cocoon
+  dflToWetCocoonKg: number; // kg wet cocoon per DFL
+  wetToDryCocoonConversion: number; // ratio (0.45 = 45% retained)
+  dryToReeledSilkConversion: number; // ratio
+  reelability: number; // percentage 0-1
+  dflsBrushed: number;
 }
 
 export interface KPISummary {
@@ -43,6 +51,11 @@ export interface KPISummary {
   totalEggs: number;
   totalWorms: number;
   avgHatchRate: number;
+  avgLeafShootPerKgWetCocoon: number;
+  avgDflToWetCocoonKg: number;
+  avgReelability: number;
+  avgOverallFeedConversion: number;
+  avgWormWeight: number;
 }
 
 export interface MulberryPlot {
@@ -109,6 +122,8 @@ export interface Assumptions {
   mulberryRepropagationDays: number;
   kgLeafShootPerAcrePerHarvest: number;
   wetCocoonToReeledSilkConversion: number;
+  wetToDryConversion: number; // 0.45 (55% weight loss during drying)
+  dryToReeledConversion: number; // 0.33 (67% weight loss during reeling)
 }
 
 export interface Ticket {
