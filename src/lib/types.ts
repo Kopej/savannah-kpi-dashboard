@@ -1,5 +1,14 @@
 // Savannah Seritech Data Models & Types
 
+export interface InstarData {
+  instar: number; // 1-5
+  durationDays: number;
+  totalLeafWeightFedG: number;
+  mortality: number;
+  mortalityRatePercent: number;
+  cumulativeMortalityRatePercent: number;
+}
+
 export interface CycleData {
   id: string;
   cycleNumber: number;
@@ -15,27 +24,31 @@ export interface CycleData {
   percentNonDefective: number; // percentage 0-1
   avgWeightPerWetCocoon: number; // grams
   avgShellRatio: number; // percentage 0-1
-  totalEggs?: number; // total eggs laid
-  hatchRatePercent?: number; // hatch rate as percentage 0-1
+  totalEggs?: number;
+  hatchRatePercent?: number; // 0-1
+  // Instar-level data (ongoing cycles)
+  instars?: InstarData[];
+  // Dried/reeled data (finished cycles, optional)
+  driedCocoonWeightKg?: number;
+  reeledSilkWeightKg?: number;
 }
 
 export interface ComputedKPIs {
   hatchRate: number;
   totalMortality: number;
-  reelableWetCocoons: number; // kg
-  reelableWetCocoonsProductivity: number; // kg/acre
+  reelableWetCocoons: number;
+  reelableWetCocoonsProductivity: number;
   kgReeledSilkPerAcre: number;
   feedToFinalWormWeightConversion: number;
   wormToWetCocoonConversion: number;
   overallFeedConversion: number;
   noOfWorms: number;
   totalWormCount: number;
-  // New KPIs
-  leafShootPerKgWetCocoon: number; // kg leaf+shoot per kg wet cocoon
-  dflToWetCocoonKg: number; // kg wet cocoon per DFL
-  wetToDryCocoonConversion: number; // ratio (0.45 = 45% retained)
-  dryToReeledSilkConversion: number; // ratio
-  reelability: number; // percentage 0-1
+  leafShootPerKgWetCocoon: number;
+  dflToWetCocoonKg: number;
+  wetToDryCocoonConversion: number;
+  dryToReeledSilkConversion: number;
+  reelability: number;
   dflsBrushed: number;
 }
 
@@ -58,54 +71,6 @@ export interface KPISummary {
   avgWormWeight: number;
 }
 
-export interface MulberryPlot {
-  id: string;
-  name: string;
-  acreage: number;
-  treePopulation: number;
-  dateTransplanted: string;
-  dateLastHarvested: string;
-  nextEarliestHarvestDate: string;
-  irrigated: boolean;
-  leaseStatus?: string;
-  expectedYieldPerAcre?: number;
-  cropAge?: number; // months
-}
-
-export interface YieldSample {
-  id: string;
-  plotName: string;
-  dateOfSampling: string;
-  irrigated: boolean;
-  treeNumber: number;
-  treeHeight: number; // meters
-  shootGrowthAge?: number; // days
-  weightShootsLeaves: number; // grams
-  weightLeavesOnly: number; // grams
-}
-
-export interface YieldAverage {
-  plotName: string;
-  dateOfSampling: string;
-  shootGrowthDays: number;
-  avgShootsLeaves: number;
-  avgLeaves: number;
-  treeCount: number;
-  totalYieldKg: number;
-  acres: number;
-  avgYieldPerAcre: number;
-  irrigated: boolean;
-}
-
-export interface YieldPrediction {
-  plotName: string;
-  expectedYieldKg: number;
-  rearingCapacityDFL: number;
-  projectedYieldPerTree: number;
-  plotProductivityPerAcre: number;
-  projectedYieldPerAcrePerYear: number;
-}
-
 export interface Assumptions {
   noFarmers: number;
   chawkisPerFarmer: number;
@@ -113,7 +78,7 @@ export interface Assumptions {
   rearingCyclesPerMonth: number;
   chawkiHatchRateTarget: number;
   chawkiHatchRateActual: number;
-  leafWeightPerDFL: number; // KG
+  leafWeightPerDFL: number;
   treePopulationPerAcre: number;
   y1AnnualLeafYieldPerAcre: number;
   y2AnnualLeafYieldPerAcre: number;
@@ -122,8 +87,8 @@ export interface Assumptions {
   mulberryRepropagationDays: number;
   kgLeafShootPerAcrePerHarvest: number;
   wetCocoonToReeledSilkConversion: number;
-  wetToDryConversion: number; // 0.45 (55% weight loss during drying)
-  dryToReeledConversion: number; // 0.33 (67% weight loss during reeling)
+  wetToDryConversion: number;
+  dryToReeledConversion: number;
 }
 
 export interface Ticket {
@@ -138,11 +103,4 @@ export interface Ticket {
   notes: string;
   createdAt: string;
   updatedAt: string;
-}
-
-export interface MonthlyYield {
-  month: string;
-  plotName: string;
-  expectedYieldKg: number;
-  rearingCapacityDFL: number;
 }

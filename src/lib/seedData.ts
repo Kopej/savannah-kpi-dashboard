@@ -1,4 +1,4 @@
-import type { CycleData, MulberryPlot, YieldSample } from './types';
+import type { CycleData } from './types';
 
 function uid() {
   return Math.random().toString(36).slice(2, 10);
@@ -12,6 +12,7 @@ export const SEED_CYCLES: CycleData[] = [
     finalLarvaeWeight: 3.3, totalLeafWeightFed: 486490,
     totalHarvestedWetCocoonWeight: 20, percentNonDefective: 0.79,
     avgWeightPerWetCocoon: 1.2, avgShellRatio: 0.17,
+    totalEggs: 27090, hatchRatePercent: 0.71,
   },
   {
     id: uid(), cycleNumber: 9, hatchDate: '2025-09-13', status: 'finished',
@@ -20,6 +21,7 @@ export const SEED_CYCLES: CycleData[] = [
     finalLarvaeWeight: 3.6, totalLeafWeightFed: 251520,
     totalHarvestedWetCocoonWeight: 10.5, percentNonDefective: 0.97,
     avgWeightPerWetCocoon: 1.2, avgShellRatio: 0.21,
+    totalEggs: 24827, hatchRatePercent: 0.55,
   },
   {
     id: uid(), cycleNumber: 10, hatchDate: '2025-09-30', status: 'finished',
@@ -28,6 +30,7 @@ export const SEED_CYCLES: CycleData[] = [
     finalLarvaeWeight: 3.8, totalLeafWeightFed: 521625,
     totalHarvestedWetCocoonWeight: 25.05, percentNonDefective: 1.0,
     avgWeightPerWetCocoon: 1.2, avgShellRatio: 0.24,
+    totalEggs: 22350, hatchRatePercent: 0.95,
   },
   {
     id: uid(), cycleNumber: 11, hatchDate: '2025-09-29', status: 'finished',
@@ -36,6 +39,7 @@ export const SEED_CYCLES: CycleData[] = [
     finalLarvaeWeight: 3.7, totalLeafWeightFed: 156555,
     totalHarvestedWetCocoonWeight: 6.988, percentNonDefective: 0.87,
     avgWeightPerWetCocoon: 1.6, avgShellRatio: 0.22,
+    totalEggs: 14003, hatchRatePercent: 0.74,
   },
   {
     id: uid(), cycleNumber: 12, hatchDate: '2025-10-28', status: 'finished',
@@ -44,6 +48,7 @@ export const SEED_CYCLES: CycleData[] = [
     finalLarvaeWeight: 3.0, totalLeafWeightFed: 296850,
     totalHarvestedWetCocoonWeight: 4.21, percentNonDefective: 0.86,
     avgWeightPerWetCocoon: 1.49, avgShellRatio: 0.23,
+    totalEggs: 19100, hatchRatePercent: 0.74,
   },
   {
     id: uid(), cycleNumber: 13, hatchDate: '2025-11-11', status: 'finished',
@@ -60,9 +65,13 @@ export const SEED_CYCLES: CycleData[] = [
     finalLarvaeWeight: 3.03, totalLeafWeightFed: 994930,
     totalHarvestedWetCocoonWeight: 27.36, percentNonDefective: 0.91,
     avgWeightPerWetCocoon: 1.69, avgShellRatio: 0.21,
+    totalEggs: 28000, hatchRatePercent: 0.95,
+    // Cycle 14 special: dried + reeled data
+    driedCocoonWeightKg: 27,
+    reeledSilkWeightKg: 7,
   },
   {
-    id: uid(), cycleNumber: 15, hatchDate: '2026-01-26', status: 'ongoing',
+    id: uid(), cycleNumber: 15, hatchDate: '2026-01-26', status: 'finished',
     estimatedStartingEggCount: 28000, hatchedEggs: 0,
     mortalityPreCocooning: 0, mortalityCocooning: 0,
     finalLarvaeWeight: 0, totalLeafWeightFed: 0,
@@ -71,23 +80,44 @@ export const SEED_CYCLES: CycleData[] = [
     totalEggs: 28000, hatchRatePercent: 0.95,
   },
   {
-    id: uid(), cycleNumber: 16, hatchDate: '2026-02-02', status: 'ongoing',
+    id: uid(), cycleNumber: 16, hatchDate: '2026-02-02', status: 'finished',
     estimatedStartingEggCount: 0, hatchedEggs: 0,
     mortalityPreCocooning: 0, mortalityCocooning: 0,
     finalLarvaeWeight: 0, totalLeafWeightFed: 0,
     totalHarvestedWetCocoonWeight: 0, percentNonDefective: 0,
     avgWeightPerWetCocoon: 0, avgShellRatio: 0,
   },
+  // Ongoing cycles with instar data from Excel
   {
     id: uid(), cycleNumber: 17, hatchDate: '2026-02-13', status: 'ongoing',
     estimatedStartingEggCount: 108800, hatchedEggs: 106624,
     mortalityPreCocooning: 0, mortalityCocooning: 0,
-    finalLarvaeWeight: 0, totalLeafWeightFed: 515880,
+    finalLarvaeWeight: 0, totalLeafWeightFed: 1356580,
     totalHarvestedWetCocoonWeight: 0, percentNonDefective: 0,
     avgWeightPerWetCocoon: 0, avgShellRatio: 0,
     totalEggs: 108800, hatchRatePercent: 0.98,
+    instars: [
+      { instar: 1, durationDays: 4, totalLeafWeightFedG: 8120, mortality: 0, mortalityRatePercent: 0, cumulativeMortalityRatePercent: 0 },
+      { instar: 2, durationDays: 4, totalLeafWeightFedG: 35760, mortality: 0, mortalityRatePercent: 0, cumulativeMortalityRatePercent: 0 },
+      { instar: 3, durationDays: 5, totalLeafWeightFedG: 147660, mortality: 0, mortalityRatePercent: 0, cumulativeMortalityRatePercent: 0 },
+      { instar: 4, durationDays: 6, totalLeafWeightFedG: 324340, mortality: 0, mortalityRatePercent: 0, cumulativeMortalityRatePercent: 0 },
+      { instar: 5, durationDays: 8, totalLeafWeightFedG: 840700, mortality: 183.8, mortalityRatePercent: 0.0017, cumulativeMortalityRatePercent: 0.0017 },
+    ],
+  },
+  {
+    id: uid(), cycleNumber: 18, hatchDate: '2026-03-01', status: 'ongoing',
+    estimatedStartingEggCount: 21850, hatchedEggs: 21129,
+    mortalityPreCocooning: 0, mortalityCocooning: 0,
+    finalLarvaeWeight: 0, totalLeafWeightFed: 3860,
+    totalHarvestedWetCocoonWeight: 0, percentNonDefective: 0,
+    avgWeightPerWetCocoon: 0, avgShellRatio: 0,
+    totalEggs: 21850, hatchRatePercent: 0.967,
+    instars: [
+      { instar: 1, durationDays: 4, totalLeafWeightFedG: 360, mortality: 0, mortalityRatePercent: 0, cumulativeMortalityRatePercent: 0 },
+      { instar: 2, durationDays: 4, totalLeafWeightFedG: 1300, mortality: 0, mortalityRatePercent: 0, cumulativeMortalityRatePercent: 0 },
+      { instar: 3, durationDays: 1, totalLeafWeightFedG: 2200, mortality: 0, mortalityRatePercent: 0, cumulativeMortalityRatePercent: 0 },
+      { instar: 4, durationDays: 0, totalLeafWeightFedG: 0, mortality: 0, mortalityRatePercent: 0, cumulativeMortalityRatePercent: 0 },
+      { instar: 5, durationDays: 0, totalLeafWeightFedG: 0, mortality: 0, mortalityRatePercent: 0, cumulativeMortalityRatePercent: 0 },
+    ],
   },
 ];
-
-export const SEED_PLOTS: MulberryPlot[] = [];
-export const SEED_YIELD_SAMPLES: YieldSample[] = [];

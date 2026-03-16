@@ -4,8 +4,9 @@ import { computeCycleKPIs, computeSummaryKPIs, formatPercent, formatNumber, form
 import { KPICard } from '@/components/KPICard';
 import { KPICharts } from '@/components/KPICharts';
 import { CycleDataTable } from '@/components/CycleDataTable';
+import { ConversionFunnel } from '@/components/ConversionFunnel';
 import { getTrafficLight } from '@/lib/kpiThresholds';
-import { Egg, Activity, Bug, Factory, Gauge, Scale, TrendingUp, Weight, Layers, Leaf, ArrowRightLeft, Sparkles, FlaskConical } from 'lucide-react';
+import { Egg, Activity, Bug, Factory, Gauge, Scale, TrendingUp, Weight, Layers, Leaf, ArrowRightLeft, Sparkles } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface Props {
@@ -16,24 +17,22 @@ interface Props {
 export function FinishedCyclesDashboard({ cycles, assumptions }: Props) {
   const finishedCycles = useMemo(() => getFinishedCycles(cycles), [cycles]);
 
-  // Extract available years
   const years = useMemo(() => {
     const yrs = [...new Set(finishedCycles.map(c => new Date(c.hatchDate).getFullYear()))].sort((a, b) => b - a);
     return yrs;
   }, [finishedCycles]);
 
   const [selectedYear, setSelectedYear] = useState<string>('all');
+  const [selectedFunnelCycle, setSelectedFunnelCycle] = useState<string>('latest');
 
   const filteredCycles = useMemo(() => {
     if (selectedYear === 'all') return finishedCycles;
     return finishedCycles.filter(c => new Date(c.hatchDate).getFullYear() === parseInt(selectedYear));
   }, [finishedCycles, selectedYear]);
 
-  // Last finished cycle (highlighted)
   const lastFinished = filteredCycles.length > 0 ? filteredCycles[filteredCycles.length - 1] : null;
   const lastKPIs = lastFinished ? computeCycleKPIs(lastFinished, assumptions) : null;
 
-  // Average of last 12 (or all filtered)
   const last12 = filteredCycles.slice(-12);
   const summary = useMemo(() => computeSummaryKPIs(last12, assumptions), [last12, assumptions]);
 
@@ -42,11 +41,18 @@ export function FinishedCyclesDashboard({ cycles, assumptions }: Props) {
     [filteredCycles, assumptions]
   );
 
-  // Helper for last cycle derived values
+  // Funnel cycle selection
+  const funnelCycle = selectedFunnelCycle === 'latest'
+    ? lastFinished
+    : filteredCycles.find(c => c.id === selectedFunnelCycle) || lastFinished;
+  const funnelKPIs = funnelCycle ? computeCycleKPIs(funnelCycle, assumptions) : null;
+
+  // Compute key insight values for last finished cycle
+  const totalFeedKg = lastFinished ? lastFinished.totalLeafWeightFed / 1000 : 0;
+  const totalWormCount = lastKPIs?.totalWormCount || 0;
   const dflsBrushed = lastKPIs?.dflsBrushed || 0;
   const survivalRate = lastKPIs ? 1 - lastKPIs.totalMortality : 0;
-  const wetCocoons = lastFinished?.totalHarvestedWetCocoonWeight || 0;
-  const yieldPerDFL = dflsBrushed > 0 ? wetCocoons / dflsBrushed : 0;
+  const fcr = lastKPIs?.overallFeedConversion || 0;
 
   return (
     <div className="space-y-6">
@@ -67,32 +73,65 @@ export function FinishedCyclesDashboard({ cycles, assumptions }: Props) {
         <span className="text-xs text-muted-foreground">
           {filteredCycles.length} finished cycle{filteredCycles.length !== 1 ? 's' : ''}
         </span>
+        {/* Cycle toggle */}
+        <div className="ml-auto flex gap-2 flex-wrap">
+          {filteredCycles.map(c => (
+            <button
+              key={c.id}
+              onClick={() => setSelectedFunnelCycle(c.id)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                (selectedFunnelCycle === c.id || (selectedFunnelCycle === 'latest' && c === lastFinished))
+                  ? 'bg-primary text-primary-foreground shadow-md'
+                  : 'bg-muted text-muted-foreground hover:bg-accent'
+              }`}
+            >
+              C{c.cycleNumber}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Last Finished Cycle — Big Highlight Cards */}
+      {/* Key Insights — Last Finished Cycle */}
       {lastFinished && lastKPIs && (
         <div>
           <h2 className="text-sm font-semibold text-foreground font-display mb-3 flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-primary" />
-            Last Finished Cycle: C{lastFinished.cycleNumber}
-            <span className="text-xs text-muted-foreground font-normal">({lastFinished.hatchDate})</span>
+            Key Insights · Cycle {lastFinished.cycleNumber}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <KPICard title="Eggs Started" value={formatNumber(lastFinished.totalEggs || lastFinished.estimatedStartingEggCount)} target="—" icon={Egg} delay={0} />
-            <KPICard title="DFLs Brushed" value={formatNumber(dflsBrushed)} subtitle={`${assumptions.wormsPerDFL} worms/DFL`} icon={Layers} delay={0.03} />
-            <KPICard title="Hatch Rate" value={formatPercent(lastKPIs.hatchRate)} target="≥ 95%" icon={Activity} trafficLight={getTrafficLight(lastKPIs.hatchRate, 'hatchRate')} delay={0.06} />
-            <KPICard title="Total Worm Count" value={formatNumber(lastKPIs.totalWormCount)} subtitle="Eggs × Hatch Rate" icon={Bug} delay={0.09} />
-            <KPICard title="Survival Rate" value={formatPercent(survivalRate)} target="≥ 90%" icon={TrendingUp} trafficLight={getTrafficLight(survivalRate, 'survivalRate')} delay={0.12} />
-            <KPICard title="Avg Worm Weight" value={`${lastFinished.finalLarvaeWeight.toFixed(2)}g`} target="≥ 3.0g" icon={Weight} trafficLight={getTrafficLight(lastFinished.finalLarvaeWeight, 'wormWeight')} delay={0.15} />
-            <KPICard title="Wet Cocoons" value={formatKg(wetCocoons)} target={`Shell: ${formatPercent(lastFinished.avgShellRatio)}`} icon={Factory} trafficLight={getTrafficLight(lastFinished.avgShellRatio, 'shellRatio')} delay={0.18} />
-            <KPICard title="Yield per DFL" value={`${(yieldPerDFL * 1000).toFixed(0)}g`} target="≥ 35g" icon={Scale} trafficLight={getTrafficLight(yieldPerDFL, 'yieldPerDFL')} delay={0.21} />
-            {/* New KPIs */}
-            <KPICard title="Leaf+Shoot / kg Cocoon" value={`${lastKPIs.leafShootPerKgWetCocoon.toFixed(1)} kg`} subtitle="Feed efficiency" icon={Leaf} delay={0.24} />
-            <KPICard title="DFL → Wet Cocoon" value={`${(lastKPIs.dflToWetCocoonKg * 1000).toFixed(0)}g/DFL`} subtitle="Conversion rate" icon={ArrowRightLeft} delay={0.27} />
-            <KPICard title="Wet → Dry Cocoon" value={formatPercent(lastKPIs.wetToDryCocoonConversion)} subtitle="45% retained after drying" icon={FlaskConical} delay={0.30} />
-            <KPICard title="Reelability" value={formatPercent(lastKPIs.reelability)} target="≥ 90%" icon={Gauge} trafficLight={getTrafficLight(lastKPIs.reelability, 'nonDefective')} delay={0.33} />
+            <KPICard title="Number of DFLs" value={formatNumber(dflsBrushed)} subtitle={`${assumptions.wormsPerDFL} worms/DFL`} icon={Layers} delay={0} />
+            <KPICard title="Total Worm Count" value={formatNumber(totalWormCount)} subtitle="Eggs × Hatch Rate" icon={Bug} delay={0.03} />
+            <KPICard title="Total Feed Used" value={`${formatNumber(totalFeedKg, 1)} kg`} subtitle="Leaf + Shoot" icon={Leaf} delay={0.06} />
+            <KPICard
+              title="Feed Conversion Ratio"
+              value={fcr > 0 && isFinite(fcr) ? `${fcr.toFixed(1)}` : '—'}
+              subtitle="kg feed / kg wet cocoon"
+              icon={ArrowRightLeft}
+              trafficLight={fcr > 0 && isFinite(fcr) ? getTrafficLight(fcr, 'fcr') : undefined}
+              delay={0.09}
+            />
           </div>
         </div>
+      )}
+
+      {/* Secondary KPIs */}
+      {lastFinished && lastKPIs && (
+        <div>
+          <h2 className="text-sm font-semibold text-foreground font-display mb-3">
+            Performance Indicators
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <KPICard title="Hatch Rate" value={formatPercent(lastKPIs.hatchRate)} target="≥ 95%" icon={Activity} trafficLight={getTrafficLight(lastKPIs.hatchRate, 'hatchRate')} delay={0.12} />
+            <KPICard title="Survival Rate" value={formatPercent(survivalRate)} target="≥ 90%" icon={TrendingUp} trafficLight={getTrafficLight(survivalRate, 'survivalRate')} delay={0.15} />
+            <KPICard title="Avg Worm Weight" value={`${lastFinished.finalLarvaeWeight.toFixed(2)}g`} target="≥ 5.0g" icon={Weight} trafficLight={getTrafficLight(lastFinished.finalLarvaeWeight, 'wormWeight')} delay={0.18} />
+            <KPICard title="Wet Cocoons" value={formatKg(lastFinished.totalHarvestedWetCocoonWeight)} target={`Shell: ${formatPercent(lastFinished.avgShellRatio)}`} icon={Factory} trafficLight={getTrafficLight(lastFinished.avgShellRatio, 'shellRatio')} delay={0.21} />
+          </div>
+        </div>
+      )}
+
+      {/* Conversion Funnel */}
+      {funnelCycle && funnelKPIs && (
+        <ConversionFunnel cycle={funnelCycle} kpis={funnelKPIs} assumptions={assumptions} />
       )}
 
       {/* Average Section */}
@@ -104,54 +143,25 @@ export function FinishedCyclesDashboard({ cycles, assumptions }: Props) {
           </h2>
           <div className="glass-card rounded-xl p-5 border-l-4 border-l-secondary">
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-              <div className="space-y-0.5">
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Avg Yield/DFL</p>
-                <p className="text-lg font-bold text-foreground font-display">{formatNumber(summary.avgYieldPerDFL * 1000, 0)}g</p>
-              </div>
-              <div className="space-y-0.5">
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Avg Survival</p>
-                <p className="text-lg font-bold text-foreground font-display">{formatPercent(summary.avgSurvivalRate)}</p>
-              </div>
-              <div className="space-y-0.5">
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Avg Hatch Rate</p>
-                <p className="text-lg font-bold text-foreground font-display">{formatPercent(summary.avgHatchRate)}</p>
-              </div>
-              <div className="space-y-0.5">
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Avg Worm Wt</p>
-                <p className="text-lg font-bold text-foreground font-display">{summary.avgWormWeight.toFixed(2)}g</p>
-              </div>
-              <div className="space-y-0.5">
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Avg Feed/Cocoon</p>
-                <p className="text-lg font-bold text-foreground font-display">{summary.avgLeafShootPerKgWetCocoon.toFixed(1)} kg</p>
-              </div>
-              <div className="space-y-0.5">
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Avg Reelability</p>
-                <p className="text-lg font-bold text-foreground font-display">{formatPercent(summary.avgReelability)}</p>
-              </div>
-              <div className="space-y-0.5">
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Total Production</p>
-                <p className="text-lg font-bold text-foreground font-display">{formatKg(summary.totalProduction)}</p>
-              </div>
-              <div className="space-y-0.5">
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Total Cocoons</p>
-                <p className="text-lg font-bold text-foreground font-display">{formatNumber(summary.totalCocoons)}</p>
-              </div>
-              <div className="space-y-0.5">
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Avg Cocoon Wt</p>
-                <p className="text-lg font-bold text-foreground font-display">{summary.avgCocoonWeight.toFixed(2)}g</p>
-              </div>
-              <div className="space-y-0.5">
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Avg Shell Ratio</p>
-                <p className="text-lg font-bold text-foreground font-display">{formatPercent(summary.avgShellRatio)}</p>
-              </div>
-              <div className="space-y-0.5">
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">DFL→Cocoon</p>
-                <p className="text-lg font-bold text-foreground font-display">{(summary.avgDflToWetCocoonKg * 1000).toFixed(0)}g/DFL</p>
-              </div>
-              <div className="space-y-0.5">
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Wet→Reeled Silk</p>
-                <p className="text-lg font-bold text-foreground font-display">25%</p>
-              </div>
+              {[
+                ['Avg Yield/DFL', `${formatNumber(summary.avgYieldPerDFL * 1000, 0)}g`],
+                ['Avg Survival', formatPercent(summary.avgSurvivalRate)],
+                ['Avg Hatch Rate', formatPercent(summary.avgHatchRate)],
+                ['Avg Worm Wt', `${summary.avgWormWeight.toFixed(2)}g`],
+                ['Avg Feed/Cocoon', `${summary.avgLeafShootPerKgWetCocoon.toFixed(1)} kg`],
+                ['Avg Reelability', formatPercent(summary.avgReelability)],
+                ['Total Production', formatKg(summary.totalProduction)],
+                ['Total Cocoons', formatNumber(summary.totalCocoons)],
+                ['Avg Cocoon Wt', `${summary.avgCocoonWeight.toFixed(2)}g`],
+                ['Avg Shell Ratio', formatPercent(summary.avgShellRatio)],
+                ['DFL→Cocoon', `${(summary.avgDflToWetCocoonKg * 1000).toFixed(0)}g/DFL`],
+                ['Wet→Reeled Silk', '25%'],
+              ].map(([label, val]) => (
+                <div key={label} className="space-y-0.5">
+                  <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</p>
+                  <p className="text-lg font-bold text-foreground font-display">{val}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
