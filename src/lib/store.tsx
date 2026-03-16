@@ -1,4 +1,3 @@
-// Global state store using React context
 import React, { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 import type { CycleData, Ticket, Assumptions } from './types';
 import { SEED_CYCLES } from './seedData';
@@ -11,6 +10,7 @@ interface AppState {
   addCycle: (cycle: CycleData) => void;
   addTicket: (ticket: Ticket) => void;
   updateTicket: (id: string, updates: Partial<Ticket>) => void;
+  markCycleFinished: (id: string) => void;
 }
 
 const AppContext = createContext<AppState | null>(null);
@@ -32,8 +32,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setTickets(prev => prev.map(t => t.id === id ? { ...t, ...updates, updatedAt: new Date().toISOString() } : t));
   }, []);
 
+  const markCycleFinished = useCallback((id: string) => {
+    setCycles(prev => prev.map(c => c.id === id ? { ...c, status: 'finished' as const } : c));
+  }, []);
+
   return (
-    <AppContext.Provider value={{ cycles, tickets, assumptions, addCycle, addTicket, updateTicket }}>
+    <AppContext.Provider value={{ cycles, tickets, assumptions, addCycle, addTicket, updateTicket, markCycleFinished }}>
       {children}
     </AppContext.Provider>
   );

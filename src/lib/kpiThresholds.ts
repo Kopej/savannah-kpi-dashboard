@@ -1,20 +1,22 @@
 // Configurable KPI thresholds for traffic light indicators
 
 export interface KPIThreshold {
-  green: number;   // >= this value = green
-  yellow?: number; // >= this value = yellow (optional)
-  // below yellow (or green if no yellow) = red
+  green: number;
+  yellow?: number;
   direction: 'higher-better' | 'lower-better';
 }
 
 export const KPI_THRESHOLDS: Record<string, KPIThreshold> = {
-  hatchRate: { green: 0.85, yellow: 0.70, direction: 'higher-better' },
+  hatchRate: { green: 0.95, yellow: 0.85, direction: 'higher-better' },
   survivalRate: { green: 0.90, yellow: 0.80, direction: 'higher-better' },
-  cocoonWeight: { green: 1.5, yellow: 1.2, direction: 'higher-better' },
+  cocoonWeight: { green: 2.0, yellow: 1.5, direction: 'higher-better' },
   shellRatio: { green: 0.21, yellow: 0.18, direction: 'higher-better' },
-  yieldPerDFL: { green: 0.035, yellow: 0.025, direction: 'higher-better' }, // in kg
-  wormWeight: { green: 3.0, yellow: 2.5, direction: 'higher-better' },
-  nonDefective: { green: 0.90, yellow: 0.80, direction: 'higher-better' },
+  yieldPerDFL: { green: 0.035, yellow: 0.025, direction: 'higher-better' },
+  wormWeight: { green: 5.0, yellow: 3.0, direction: 'higher-better' },
+  nonDefective: { green: 0.95, yellow: 0.85, direction: 'higher-better' },
+  dflCount: { green: 500, yellow: 300, direction: 'higher-better' },
+  mortality: { green: 0.10, yellow: 0.15, direction: 'lower-better' },
+  fcr: { green: 20, yellow: 30, direction: 'lower-better' },
 };
 
 export type TrafficLight = 'green' | 'yellow' | 'red';
