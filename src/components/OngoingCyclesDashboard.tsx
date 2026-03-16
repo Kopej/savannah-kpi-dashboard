@@ -1,11 +1,24 @@
 import { useMemo, useState } from 'react';
 import type { CycleData, Assumptions } from '@/lib/types';
-import { computeCycleKPIs, formatPercent, formatNumber, formatKg, getOngoingCycles } from '@/lib/calculations';
+import { computeCycleKPIs, formatPercent, formatNumber, getOngoingCycles } from '@/lib/calculations';
 import { KPICard } from '@/components/KPICard';
 import { getTrafficLight } from '@/lib/kpiThresholds';
-import { Egg, Activity, Bug, Leaf, Weight, TrendingUp, ArrowRightLeft, Gauge, Skull, Layers } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Egg, Activity, Skull, Leaf, Weight, Layers, CheckCircle2 } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from 'recharts';
 import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { useAppState } from '@/lib/store';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface Props {
   cycles: CycleData[];
@@ -13,6 +26,7 @@ interface Props {
 }
 
 export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
+  const { markCycleFinished } = useAppState();
   const ongoingCycles = useMemo(() => getOngoingCycles(cycles), [cycles]);
 
   const [selectedCycleId, setSelectedCycleId] = useState<string>(
@@ -31,30 +45,81 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
   }
 
   const leafFedKg = selectedCycle ? selectedCycle.totalLeafWeightFed / 1000 : 0;
-  const totalEggs = selectedCycle ? (selectedCycle.totalEggs || selectedCycle.estimatedStartingEggCount) : 0;
-  const hatchRate = kpis?.hatchRate || 0;
-  const survivalRate = kpis ? 1 - kpis.totalMortality : 0;
+  const hatchRate = kpis?.hatchRate || selectedCycle?.hatchRatePercent || 0;
+  const totalMortality = kpis?.totalMortality || 0;
+  const dflsBrushed = kpis?.dflsBrushed || 0;
+
+  // Instar chart data
+  const instarFeedData = selectedCycle?.instars?.map(i => ({
+    instar: `Instar ${i.instar}`,
+    feedKg: Math.round(i.totalLeafWeightFedG / 100) / 10,
+    days: i.durationDays,
+  })) || [];
+
+  const instarMortalityData = selectedCycle?.instars?.map(i => ({
+    instar: `Instar ${i.instar}`,
+    mortality: Math.round(i.mortalityRatePercent * 10000) / 100,
+    cumulative: Math.round(i.cumulativeMortalityRatePercent * 10000) / 100,
+  })) || [];
+
+  const tooltipStyle = {
+    contentStyle: {
+      backgroundColor: 'hsl(0 0% 100%)',
+      border: '1px solid hsl(170 15% 88%)',
+      borderRadius: '8px',
+      fontSize: '12px',
+    },
+  };
 
   return (
     <div className="space-y-6">
-      {/* Cycle Selector */}
-      <div className="flex items-center gap-3">
+      {/* Cycle Toggle */}
+      <div className="flex items-center gap-3 flex-wrap">
         <span className="text-sm font-medium text-muted-foreground">Select Cycle:</span>
-        <Select value={selectedCycleId} onValueChange={setSelectedCycleId}>
-          <SelectTrigger className="w-[200px] h-9">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {ongoingCycles.map(c => (
-              <SelectItem key={c.id} value={c.id}>
-                Cycle {c.cycleNumber} — {c.hatchDate}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex gap-2">
+          {ongoingCycles.map(c => (
+            <button
+              key={c.id}
+              onClick={() => setSelectedCycleId(c.id)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                selectedCycleId === c.id
+                  ? 'bg-primary text-primary-foreground shadow-md'
+                  : 'bg-muted text-muted-foreground hover:bg-accent'
+              }`}
+            >
+              Cycle {c.cycleNumber}
+            </button>
+          ))}
+        </div>
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-warning/15 text-warning">
           Ongoing
         </span>
+
+        {/* Mark as Finished */}
+        {selectedCycle && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" size="sm" className="ml-auto gap-1.5">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                Mark as Last Completed Cycle
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Complete Cycle {selectedCycle.cycleNumber}?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will move Cycle {selectedCycle.cycleNumber} from Ongoing to Finished Cycles. This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => markCycleFinished(selectedCycle.id)}>
+                  Confirm
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
       </div>
 
       {selectedCycle && kpis && (
@@ -65,10 +130,43 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
           transition={{ duration: 0.3 }}
           className="space-y-6"
         >
-          {/* Primary Real-Time Metrics */}
+          {/* Key Insight Tiles */}
           <div>
             <h2 className="text-sm font-semibold text-foreground font-display mb-3">
-              Cycle {selectedCycle.cycleNumber} · Real-Time Metrics
+              Cycle {selectedCycle.cycleNumber} · Key Insights
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <KPICard
+                title="Total DFLs"
+                value={formatNumber(dflsBrushed)}
+                target="Target: 500 DFL"
+                icon={Layers}
+                trafficLight={getTrafficLight(dflsBrushed, 'dflCount')}
+                delay={0}
+              />
+              <KPICard
+                title="Hatch Rate"
+                value={formatPercent(hatchRate)}
+                target="Target: > 95%"
+                icon={Activity}
+                trafficLight={getTrafficLight(hatchRate, 'hatchRate')}
+                delay={0.05}
+              />
+              <KPICard
+                title="Mortality"
+                value={formatPercent(totalMortality)}
+                target="Target: < 10%"
+                icon={Skull}
+                trafficLight={getTrafficLight(totalMortality, 'mortality')}
+                delay={0.1}
+              />
+            </div>
+          </div>
+
+          {/* Additional Real-Time Metrics */}
+          <div>
+            <h2 className="text-sm font-semibold text-foreground font-display mb-3">
+              Real-Time Metrics
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <KPICard
@@ -76,96 +174,101 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
                 value={`${formatNumber(leafFedKg, 1)} kg`}
                 subtitle={`${formatNumber(selectedCycle.totalLeafWeightFed)}g total`}
                 icon={Leaf}
-                delay={0}
+                delay={0.12}
               />
               <KPICard
                 title="Larvae Weight"
                 value={selectedCycle.finalLarvaeWeight > 0 ? `${selectedCycle.finalLarvaeWeight.toFixed(2)}g` : '—'}
-                target="≥ 3.0g"
+                target="Target: ≥ 5.0g"
                 icon={Weight}
                 trafficLight={selectedCycle.finalLarvaeWeight > 0 ? getTrafficLight(selectedCycle.finalLarvaeWeight, 'wormWeight') : undefined}
-                delay={0.03}
+                delay={0.15}
               />
               <KPICard
-                title="Mortality Rate"
-                value={formatPercent(kpis.totalMortality)}
-                target="< 10%"
-                icon={Skull}
-                trafficLight={getTrafficLight(survivalRate, 'survivalRate')}
-                delay={0.06}
+                title="Total Eggs"
+                value={formatNumber(selectedCycle.totalEggs || selectedCycle.estimatedStartingEggCount)}
+                icon={Egg}
+                delay={0.18}
               />
               <KPICard
-                title="Hatch Rate"
-                value={hatchRate > 0 ? formatPercent(hatchRate) : (selectedCycle.hatchRatePercent ? formatPercent(selectedCycle.hatchRatePercent) : '—')}
-                target="≥ 95%"
-                icon={Activity}
-                trafficLight={hatchRate > 0 ? getTrafficLight(hatchRate, 'hatchRate') : (selectedCycle.hatchRatePercent ? getTrafficLight(selectedCycle.hatchRatePercent, 'hatchRate') : undefined)}
-                delay={0.09}
+                title="Hatched Worms"
+                value={formatNumber(selectedCycle.hatchedEggs)}
+                subtitle="Active worm count"
+                icon={Egg}
+                delay={0.21}
               />
             </div>
           </div>
 
-          {/* Additional Metrics */}
-          <div>
-            <h2 className="text-sm font-semibold text-foreground font-display mb-3">
-              Additional KPIs
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <KPICard
-                title="Total Eggs"
-                value={formatNumber(totalEggs)}
-                icon={Egg}
-                delay={0.12}
-              />
-              <KPICard
-                title="DFLs Brushed"
-                value={formatNumber(kpis.dflsBrushed)}
-                subtitle={`${assumptions.wormsPerDFL} worms/DFL`}
-                icon={Layers}
-                delay={0.15}
-              />
-              <KPICard
-                title="Total Worm Count"
-                value={formatNumber(kpis.totalWormCount)}
-                subtitle="Eggs × Hatch Rate"
-                icon={Bug}
-                delay={0.18}
-              />
-              <KPICard
-                title="Survival Rate"
-                value={formatPercent(survivalRate)}
-                target="≥ 90%"
-                icon={TrendingUp}
-                trafficLight={getTrafficLight(survivalRate, 'survivalRate')}
-                delay={0.21}
-              />
-              {selectedCycle.totalHarvestedWetCocoonWeight > 0 && (
-                <>
-                  <KPICard
-                    title="Leaf+Shoot / kg Cocoon"
-                    value={`${kpis.leafShootPerKgWetCocoon.toFixed(1)} kg`}
-                    subtitle="Feed per kg wet cocoon"
-                    icon={Leaf}
-                    delay={0.24}
-                  />
-                  <KPICard
-                    title="DFL → Wet Cocoon"
-                    value={`${(kpis.dflToWetCocoonKg * 1000).toFixed(0)}g/DFL`}
-                    icon={ArrowRightLeft}
-                    delay={0.27}
-                  />
-                  <KPICard
-                    title="Reelability"
-                    value={formatPercent(kpis.reelability)}
-                    target="≥ 90%"
-                    icon={Gauge}
-                    trafficLight={getTrafficLight(kpis.reelability, 'nonDefective')}
-                    delay={0.30}
-                  />
-                </>
-              )}
+          {/* Instars Performance Section */}
+          {selectedCycle.instars && selectedCycle.instars.length > 0 && (
+            <div>
+              <h2 className="text-sm font-semibold text-foreground font-display mb-3">
+                Instar Performance
+              </h2>
+
+              {/* Instar Data Table */}
+              <div className="glass-card rounded-xl p-5 mb-4 overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="text-left py-2 px-3 text-xs uppercase tracking-wide text-muted-foreground">Instar</th>
+                      <th className="text-right py-2 px-3 text-xs uppercase tracking-wide text-muted-foreground">Duration (days)</th>
+                      <th className="text-right py-2 px-3 text-xs uppercase tracking-wide text-muted-foreground">Feed (kg)</th>
+                      <th className="text-right py-2 px-3 text-xs uppercase tracking-wide text-muted-foreground">Mortality</th>
+                      <th className="text-right py-2 px-3 text-xs uppercase tracking-wide text-muted-foreground">Mortality %</th>
+                      <th className="text-right py-2 px-3 text-xs uppercase tracking-wide text-muted-foreground">Cumulative %</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedCycle.instars.map(i => (
+                      <tr key={i.instar} className="border-b border-border/50 hover:bg-muted/30">
+                        <td className="py-2 px-3 font-medium text-foreground">Instar {i.instar}</td>
+                        <td className="py-2 px-3 text-right text-foreground">{i.durationDays}</td>
+                        <td className="py-2 px-3 text-right text-foreground">{(i.totalLeafWeightFedG / 1000).toFixed(1)}</td>
+                        <td className="py-2 px-3 text-right text-foreground">{i.mortality > 0 ? formatNumber(i.mortality, 1) : '0'}</td>
+                        <td className="py-2 px-3 text-right text-foreground">{(i.mortalityRatePercent * 100).toFixed(2)}%</td>
+                        <td className="py-2 px-3 text-right text-foreground">{(i.cumulativeMortalityRatePercent * 100).toFixed(2)}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Instar Charts */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="glass-card rounded-xl p-5">
+                  <h3 className="text-sm font-semibold text-foreground mb-1 font-display">Feed Consumption per Instar</h3>
+                  <p className="text-[10px] text-muted-foreground mb-4">Leaf weight fed (kg) by instar stage</p>
+                  <ResponsiveContainer width="100%" height={240}>
+                    <BarChart data={instarFeedData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(170 15% 88%)" />
+                      <XAxis dataKey="instar" tick={{ fontSize: 11 }} />
+                      <YAxis tick={{ fontSize: 11 }} />
+                      <Tooltip {...tooltipStyle} />
+                      <Bar dataKey="feedKg" fill="hsl(174, 62%, 32%)" radius={[4, 4, 0, 0]} name="Feed (kg)" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="glass-card rounded-xl p-5">
+                  <h3 className="text-sm font-semibold text-foreground mb-1 font-display">Mortality per Instar</h3>
+                  <p className="text-[10px] text-muted-foreground mb-4">Mortality rate (%) by instar stage</p>
+                  <ResponsiveContainer width="100%" height={240}>
+                    <LineChart data={instarMortalityData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(170 15% 88%)" />
+                      <XAxis dataKey="instar" tick={{ fontSize: 11 }} />
+                      <YAxis tick={{ fontSize: 11 }} />
+                      <Tooltip {...tooltipStyle} />
+                      <Legend wrapperStyle={{ fontSize: 11 }} />
+                      <Line type="monotone" dataKey="mortality" stroke="hsl(0, 72%, 51%)" strokeWidth={2} dot={{ r: 4 }} name="Mortality %" />
+                      <Line type="monotone" dataKey="cumulative" stroke="hsl(38, 92%, 50%)" strokeWidth={2} dot={{ r: 4 }} name="Cumulative %" />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Raw Data Summary */}
           <div className="glass-card rounded-xl p-5">
@@ -175,15 +278,11 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
                 ['Hatch Date', selectedCycle.hatchDate],
                 ['Starting Egg Count', formatNumber(selectedCycle.estimatedStartingEggCount)],
                 ['Hatched Eggs', formatNumber(selectedCycle.hatchedEggs)],
+                ['Hatch Rate', hatchRate > 0 ? formatPercent(hatchRate) : '—'],
                 ['Mortality Pre-Cocooning', formatPercent(selectedCycle.mortalityPreCocooning)],
                 ['Mortality Cocooning', formatPercent(selectedCycle.mortalityCocooning)],
                 ['Final Larvae Weight', selectedCycle.finalLarvaeWeight > 0 ? `${selectedCycle.finalLarvaeWeight}g` : '—'],
-                ['Leaf Weight Fed', `${formatNumber(leafFedKg, 1)} kg`],
-                ['Wet Cocoon Weight', selectedCycle.totalHarvestedWetCocoonWeight > 0 ? formatKg(selectedCycle.totalHarvestedWetCocoonWeight) : '—'],
-                ['Non-Defective %', selectedCycle.percentNonDefective > 0 ? formatPercent(selectedCycle.percentNonDefective) : '—'],
-                ['Avg Cocoon Weight', selectedCycle.avgWeightPerWetCocoon > 0 ? `${selectedCycle.avgWeightPerWetCocoon}g` : '—'],
-                ['Shell Ratio', selectedCycle.avgShellRatio > 0 ? formatPercent(selectedCycle.avgShellRatio) : '—'],
-                ['Wet→Dry Conversion', formatPercent(kpis.wetToDryCocoonConversion)],
+                ['Total Leaf Weight Fed', `${formatNumber(leafFedKg, 1)} kg`],
               ].map(([label, val]) => (
                 <div key={label as string}>
                   <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</p>
