@@ -6,8 +6,10 @@ import { KPICharts } from '@/components/KPICharts';
 import { CycleDataTable } from '@/components/CycleDataTable';
 import { ConversionFunnel } from '@/components/ConversionFunnel';
 import { getTrafficLight } from '@/lib/kpiThresholds';
-import { Egg, Activity, Bug, Factory, Gauge, Scale, TrendingUp, Weight, Layers, Leaf, ArrowRightLeft, Sparkles } from 'lucide-react';
+import { Activity, Bug, Factory, Scale, TrendingUp, Weight, Layers, Leaf, ArrowRightLeft, Sparkles } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 interface Props {
   cycles: CycleData[];
@@ -23,66 +25,138 @@ export function FinishedCyclesDashboard({ cycles, assumptions }: Props) {
   }, [finishedCycles]);
 
   const [selectedYear, setSelectedYear] = useState<string>('all');
-  const [selectedFunnelCycle, setSelectedFunnelCycle] = useState<string>('latest');
+  const [selectedCycleIds, setSelectedCycleIds] = useState<Set<string>>(new Set());
 
-  const filteredCycles = useMemo(() => {
+  const yearFilteredCycles = useMemo(() => {
     if (selectedYear === 'all') return finishedCycles;
     return finishedCycles.filter(c => new Date(c.hatchDate).getFullYear() === parseInt(selectedYear));
   }, [finishedCycles, selectedYear]);
 
-  const lastFinished = filteredCycles.length > 0 ? filteredCycles[filteredCycles.length - 1] : null;
-  const lastKPIs = lastFinished ? computeCycleKPIs(lastFinished, assumptions) : null;
+  // Reset selection when year changes
+  const toggleCycle = (id: string) => {
+    setSelectedCycleIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
-  const last12 = filteredCycles.slice(-12);
-  const summary = useMemo(() => computeSummaryKPIs(last12, assumptions), [last12, assumptions]);
+  const selectAll = () => {
+    if (selectedCycleIds.size === yearFilteredCycles.length) {
+      setSelectedCycleIds(new Set());
+    } else {
+      setSelectedCycleIds(new Set(yearFilteredCycles.map(c => c.id)));
+    }
+  };
+
+  // Active cycles = selected ones, or all if none selected
+  const activeCycles = useMemo(() => {
+    if (selectedCycleIds.size === 0) return yearFilteredCycles;
+    return yearFilteredCycles.filter(c => selectedCycleIds.has(c.id));
+  }, [yearFilteredCycles, selectedCycleIds]);
+
+  const isMultiSelect = activeCycles.length > 1;
+  const singleCycle = !isMultiSelect && activeCycles.length === 1 ? activeCycles[0] : null;
+
+  // Compute KPIs
+  const singleKPIs = singleCycle ? computeCycleKPIs(singleCycle, assumptions) : null;
+  const summary = useMemo(() => computeSummaryKPIs(activeCycles, assumptions), [activeCycles, assumptions]);
 
   const cyclesWithKPIs = useMemo(() =>
-    filteredCycles.map(c => ({ ...c, kpis: computeCycleKPIs(c, assumptions) })),
-    [filteredCycles, assumptions]
+    yearFilteredCycles.map(c => ({ ...c, kpis: computeCycleKPIs(c, assumptions) })),
+    [yearFilteredCycles, assumptions]
   );
 
-  // Funnel cycle selection
-  const funnelCycle = selectedFunnelCycle === 'latest'
-    ? lastFinished
-    : filteredCycles.find(c => c.id === selectedFunnelCycle) || lastFinished;
-  const funnelKPIs = funnelCycle ? computeCycleKPIs(funnelCycle, assumptions) : null;
+  // For funnel in multi-select, create an averaged pseudo-cycle
+  const funnelCycle = singleCycle;
+  const funnelKPIs = singleKPIs;
 
-  // Compute key insight values for last finished cycle
-  const totalFeedKg = lastFinished ? lastFinished.totalLeafWeightFed / 1000 : 0;
-  const totalWormCount = lastKPIs?.totalWormCount || 0;
-  const dflsBrushed = lastKPIs?.dflsBrushed || 0;
-  const survivalRate = lastKPIs ? 1 - lastKPIs.totalMortality : 0;
-  const fcr = lastKPIs?.overallFeedConversion || 0;
+  // Averaged funnel data for multi-select
+  const avgFunnelCycle = useMemo<CycleData | null>(() => {
+    if (!isMultiSelect || activeCycles.length === 0) return null;
+    const n = activeCycles.length;
+    return {
+      id: 'avg',
+      cycleNumber: 0,
+      hatchDate: '',
+      status: 'finished',
+      estimatedStartingEggCount: Math.round(activeCycles.reduce((s, c) => s + c.estimatedStartingEggCount, 0) / n),
+      hatchedEggs: Math.round(activeCycles.reduce((s, c) => s + c.hatchedEggs, 0) / n),
+      mortalityPreCocooning: activeCycles.reduce((s, c) => s + c.mortalityPreCocooning, 0) / n,
+      mortalityCocooning: activeCycles.reduce((s, c) => s + c.mortalityCocooning, 0) / n,
+      finalLarvaeWeight: activeCycles.reduce((s, c) => s + c.finalLarvaeWeight, 0) / n,
+      totalLeafWeightFed: activeCycles.reduce((s, c) => s + c.totalLeafWeightFed, 0) / n,
+      totalHarvestedWetCocoonWeight: activeCycles.reduce((s, c) => s + c.totalHarvestedWetCocoonWeight, 0) / n,
+      percentNonDefective: activeCycles.reduce((s, c) => s + c.percentNonDefective, 0) / n,
+      avgWeightPerWetCocoon: activeCycles.reduce((s, c) => s + c.avgWeightPerWetCocoon, 0) / n,
+      avgShellRatio: activeCycles.reduce((s, c) => s + c.avgShellRatio, 0) / n,
+      totalEggs: Math.round(activeCycles.reduce((s, c) => s + (c.totalEggs || c.estimatedStartingEggCount), 0) / n),
+      hatchRatePercent: activeCycles.reduce((s, c) => s + (c.hatchRatePercent || 0), 0) / n,
+      driedCocoonWeightKg: activeCycles.some(c => c.driedCocoonWeightKg) ? activeCycles.reduce((s, c) => s + (c.driedCocoonWeightKg || 0), 0) / n : undefined,
+    };
+  }, [isMultiSelect, activeCycles]);
+
+  const avgFunnelKPIs = avgFunnelCycle ? computeCycleKPIs(avgFunnelCycle, assumptions) : null;
+
+  // Display values
+  const displayCycle = singleCycle || avgFunnelCycle;
+  const displayKPIs = singleKPIs || (avgFunnelKPIs ? avgFunnelKPIs : null);
+
+  const totalFeedKg = displayCycle ? displayCycle.totalLeafWeightFed / 1000 : 0;
+  const totalWormCount = displayKPIs?.totalWormCount || 0;
+  const dflsBrushed = displayKPIs?.dflsBrushed || 0;
+  const survivalRate = displayKPIs ? 1 - displayKPIs.totalMortality : 0;
+  const fcr = displayKPIs?.overallFeedConversion || 0;
+
+  const cycleLabel = isMultiSelect
+    ? `Average of ${activeCycles.length} Cycles (C${activeCycles[0]?.cycleNumber}–C${activeCycles[activeCycles.length - 1]?.cycleNumber})`
+    : singleCycle ? `Cycle ${singleCycle.cycleNumber}` : '';
 
   return (
     <div className="space-y-6">
-      {/* Year Filter */}
-      <div className="flex items-center gap-3">
-        <span className="text-sm font-medium text-muted-foreground">Filter by Year:</span>
-        <Select value={selectedYear} onValueChange={setSelectedYear}>
-          <SelectTrigger className="w-[140px] h-9">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Years</SelectItem>
-            {years.map(y => (
-              <SelectItem key={y} value={String(y)}>{y}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <span className="text-xs text-muted-foreground">
-          {filteredCycles.length} finished cycle{filteredCycles.length !== 1 ? 's' : ''}
-        </span>
-        {/* Cycle toggle */}
-        <div className="ml-auto flex gap-2 flex-wrap">
-          {filteredCycles.map(c => (
+      {/* Filters */}
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="text-sm font-medium text-muted-foreground">Year:</span>
+          <Select value={selectedYear} onValueChange={(v) => { setSelectedYear(v); setSelectedCycleIds(new Set()); }}>
+            <SelectTrigger className="w-[120px] h-9">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Years</SelectItem>
+              {years.map(y => (
+                <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <span className="text-xs text-muted-foreground">
+            {activeCycles.length} of {yearFilteredCycles.length} cycles selected
+          </span>
+        </div>
+
+        {/* Multi-select cycle toggles */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <button
+            onClick={selectAll}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              selectedCycleIds.size === 0 || selectedCycleIds.size === yearFilteredCycles.length
+                ? 'bg-primary text-primary-foreground shadow-md'
+                : 'bg-muted text-muted-foreground hover:bg-accent'
+            }`}
+          >
+            All
+          </button>
+          {yearFilteredCycles.map(c => (
             <button
               key={c.id}
-              onClick={() => setSelectedFunnelCycle(c.id)}
+              onClick={() => toggleCycle(c.id)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                (selectedFunnelCycle === c.id || (selectedFunnelCycle === 'latest' && c === lastFinished))
+                selectedCycleIds.has(c.id)
                   ? 'bg-primary text-primary-foreground shadow-md'
-                  : 'bg-muted text-muted-foreground hover:bg-accent'
+                  : selectedCycleIds.size === 0
+                    ? 'bg-primary/20 text-primary hover:bg-primary/30'
+                    : 'bg-muted text-muted-foreground hover:bg-accent'
               }`}
             >
               C{c.cycleNumber}
@@ -91,12 +165,12 @@ export function FinishedCyclesDashboard({ cycles, assumptions }: Props) {
         </div>
       </div>
 
-      {/* Key Insights — Last Finished Cycle */}
-      {lastFinished && lastKPIs && (
+      {/* Key Insights */}
+      {displayCycle && displayKPIs && (
         <div>
           <h2 className="text-sm font-semibold text-foreground font-display mb-3 flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-primary" />
-            Key Insights · Cycle {lastFinished.cycleNumber}
+            {cycleLabel}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <KPICard title="Number of DFLs" value={formatNumber(dflsBrushed)} subtitle={`${assumptions.wormsPerDFL} worms/DFL`} icon={Layers} delay={0} />
@@ -114,57 +188,34 @@ export function FinishedCyclesDashboard({ cycles, assumptions }: Props) {
         </div>
       )}
 
-      {/* Secondary KPIs */}
-      {lastFinished && lastKPIs && (
+      {/* Performance Indicators */}
+      {displayCycle && displayKPIs && (
         <div>
           <h2 className="text-sm font-semibold text-foreground font-display mb-3">
             Performance Indicators
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <KPICard title="Hatch Rate" value={formatPercent(lastKPIs.hatchRate)} target="≥ 95%" icon={Activity} trafficLight={getTrafficLight(lastKPIs.hatchRate, 'hatchRate')} delay={0.12} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <KPICard title="Hatch Rate" value={formatPercent(displayKPIs.hatchRate)} target="≥ 95%" icon={Activity} trafficLight={getTrafficLight(displayKPIs.hatchRate, 'hatchRate')} delay={0.12} />
             <KPICard title="Survival Rate" value={formatPercent(survivalRate)} target="≥ 90%" icon={TrendingUp} trafficLight={getTrafficLight(survivalRate, 'survivalRate')} delay={0.15} />
-            <KPICard title="Avg Worm Weight" value={`${lastFinished.finalLarvaeWeight.toFixed(2)}g`} target="≥ 5.0g" icon={Weight} trafficLight={getTrafficLight(lastFinished.finalLarvaeWeight, 'wormWeight')} delay={0.18} />
-            <KPICard title="Wet Cocoons" value={formatKg(lastFinished.totalHarvestedWetCocoonWeight)} target={`Shell: ${formatPercent(lastFinished.avgShellRatio)}`} icon={Factory} trafficLight={getTrafficLight(lastFinished.avgShellRatio, 'shellRatio')} delay={0.21} />
+            <KPICard title="Avg Worm Weight" value={`${displayCycle.finalLarvaeWeight.toFixed(2)}g`} target="≥ 5.0g" icon={Weight} trafficLight={getTrafficLight(displayCycle.finalLarvaeWeight, 'wormWeight')} delay={0.18} />
+            <KPICard title="Wet Cocoons" value={formatKg(displayCycle.totalHarvestedWetCocoonWeight)} target={`Shell: ${formatPercent(displayCycle.avgShellRatio)}`} icon={Factory} trafficLight={getTrafficLight(displayCycle.avgShellRatio, 'shellRatio')} delay={0.21} />
+            <KPICard title="Shell Ratio" value={formatPercent(displayCycle.avgShellRatio)} target="≥ 21%" icon={Scale} trafficLight={getTrafficLight(displayCycle.avgShellRatio, 'shellRatio')} delay={0.24} />
           </div>
         </div>
       )}
 
-      {/* Conversion Funnel */}
-      {funnelCycle && funnelKPIs && (
-        <ConversionFunnel cycle={funnelCycle} kpis={funnelKPIs} assumptions={assumptions} />
+      {/* Horizontal Conversion Funnel */}
+      {singleCycle && funnelKPIs && (
+        <ConversionFunnel cycle={singleCycle} kpis={funnelKPIs} assumptions={assumptions} />
       )}
-
-      {/* Average Section */}
-      {last12.length > 0 && (
-        <div>
-          <h2 className="text-sm font-semibold text-foreground font-display mb-3 flex items-center gap-2">
-            <TrendingUp className="h-4 w-4 text-secondary" />
-            Average of Last {last12.length} Cycles
-          </h2>
-          <div className="glass-card rounded-xl p-5 border-l-4 border-l-secondary">
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-              {[
-                ['Avg Yield/DFL', `${formatNumber(summary.avgYieldPerDFL * 1000, 0)}g`],
-                ['Avg Survival', formatPercent(summary.avgSurvivalRate)],
-                ['Avg Hatch Rate', formatPercent(summary.avgHatchRate)],
-                ['Avg Worm Wt', `${summary.avgWormWeight.toFixed(2)}g`],
-                ['Avg Feed/Cocoon', `${summary.avgLeafShootPerKgWetCocoon.toFixed(1)} kg`],
-                ['Avg Reelability', formatPercent(summary.avgReelability)],
-                ['Total Production', formatKg(summary.totalProduction)],
-                ['Total Cocoons', formatNumber(summary.totalCocoons)],
-                ['Avg Cocoon Wt', `${summary.avgCocoonWeight.toFixed(2)}g`],
-                ['Avg Shell Ratio', formatPercent(summary.avgShellRatio)],
-                ['DFL→Cocoon', `${(summary.avgDflToWetCocoonKg * 1000).toFixed(0)}g/DFL`],
-                ['Wet→Reeled Silk', '25%'],
-              ].map(([label, val]) => (
-                <div key={label} className="space-y-0.5">
-                  <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</p>
-                  <p className="text-lg font-bold text-foreground font-display">{val}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+      {isMultiSelect && avgFunnelCycle && avgFunnelKPIs && (
+        <ConversionFunnel
+          cycle={avgFunnelCycle}
+          kpis={avgFunnelKPIs}
+          assumptions={assumptions}
+          isAveraged
+          label={cycleLabel}
+        />
       )}
 
       {/* Trend Charts */}
