@@ -7,6 +7,8 @@ export interface InstarData {
   mortality: number;
   mortalityRatePercent: number;
   cumulativeMortalityRatePercent: number;
+  avgLarvaeWeight?: number; // grams, from 10-worm sample / 10
+  feedPerDFLTarget?: number; // editable target per cycle per instar
 }
 
 export interface CycleData {
@@ -31,6 +33,9 @@ export interface CycleData {
   // Dried/reeled data (finished cycles, optional)
   driedCocoonWeightKg?: number;
   reeledSilkWeightKg?: number;
+  // Per-cycle editable targets
+  wetCocoonTarget?: number; // kg target
+  currentDayOfCycle?: number; // live tracking
 }
 
 export interface ComputedKPIs {

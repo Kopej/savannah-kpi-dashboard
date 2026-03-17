@@ -17,6 +17,7 @@ export const KPI_THRESHOLDS: Record<string, KPIThreshold> = {
   dflCount: { green: 500, yellow: 300, direction: 'higher-better' },
   mortality: { green: 0.10, yellow: 0.15, direction: 'lower-better' },
   fcr: { green: 20, yellow: 30, direction: 'lower-better' },
+  wetToDry: { green: 0.45, yellow: 0.35, direction: 'higher-better' },
 };
 
 export type TrafficLight = 'green' | 'yellow' | 'red';
