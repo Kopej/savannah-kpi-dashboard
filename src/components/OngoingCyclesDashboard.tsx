@@ -3,11 +3,14 @@ import type { CycleData, Assumptions } from '@/lib/types';
 import { computeCycleKPIs, formatPercent, formatNumber, getOngoingCycles } from '@/lib/calculations';
 import { KPICard } from '@/components/KPICard';
 import { getTrafficLight } from '@/lib/kpiThresholds';
-import { Egg, Activity, Skull, Leaf, Weight, Layers, CheckCircle2, Scale, Calendar } from 'lucide-react';
+import { Egg, Activity, Skull, Leaf, Weight, Layers, CheckCircle2, Scale, Calendar, Plus } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from 'recharts';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useAppState } from '@/lib/store';
+import { DailyLogForm } from './DailyLogForm';
+import { DailyLogTable } from './DailyLogTable';
+import { DailyLogCharts } from './DailyLogCharts';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,15 +29,17 @@ interface Props {
 }
 
 export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
-  const { markCycleFinished } = useAppState();
+  const { markCycleFinished, getDailyLogsForCycle } = useAppState();
   const ongoingCycles = useMemo(() => getOngoingCycles(cycles), [cycles]);
 
   const [selectedCycleId, setSelectedCycleId] = useState<string>(
     ongoingCycles.length > 0 ? ongoingCycles[0].id : ''
   );
+  const [logFormOpen, setLogFormOpen] = useState(false);
 
   const selectedCycle = ongoingCycles.find(c => c.id === selectedCycleId) || ongoingCycles[0] || null;
   const kpis = selectedCycle ? computeCycleKPIs(selectedCycle, assumptions) : null;
+  const dailyLogs = selectedCycle ? getDailyLogsForCycle(selectedCycle.id) : [];
 
   if (ongoingCycles.length === 0) {
     return (
@@ -49,12 +54,14 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
   const totalMortality = kpis?.totalMortality || 0;
   const dflsBrushed = kpis?.dflsBrushed || 0;
 
-  // Calculate current day of cycle
+  // Current day of cycle
   const currentDayOfCycle = selectedCycle ? (() => {
     if (selectedCycle.currentDayOfCycle) return selectedCycle.currentDayOfCycle;
-    // Calculate from instars
-    const totalDays = selectedCycle.instars?.reduce((s, i) => s + i.durationDays, 0) || 0;
-    return totalDays;
+    const hatch = new Date(selectedCycle.hatchDate);
+    const now = new Date();
+    const diffMs = now.getTime() - hatch.getTime();
+    const diffDays = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+    return diffDays;
   })() : 0;
 
   // Instar chart data
@@ -86,7 +93,7 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
 
   return (
     <div className="space-y-6">
-      {/* Cycle Toggle + Day of Cycle */}
+      {/* Cycle Toggle + Day of Cycle + Add Log */}
       <div className="flex items-center gap-3 flex-wrap">
         <span className="text-sm font-medium text-muted-foreground">Select Cycle:</span>
         <div className="flex gap-2">
@@ -116,6 +123,14 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-warning/15 text-warning">
           Ongoing
         </span>
+
+        {/* Add Daily Log */}
+        {selectedCycle && (
+          <Button onClick={() => setLogFormOpen(true)} size="sm" className="kpi-gradient border-0 text-primary-foreground gap-1.5">
+            <Plus className="h-3.5 w-3.5" />
+            Add Daily Log
+          </Button>
+        )}
 
         {/* Mark as Finished */}
         {selectedCycle && (
@@ -225,6 +240,16 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
             </div>
           </div>
 
+          {/* Daily Log Time-Series Charts */}
+          {dailyLogs.length >= 2 && (
+            <div>
+              <h2 className="text-sm font-semibold text-foreground font-display mb-3">
+                Daily Trends
+              </h2>
+              <DailyLogCharts logs={dailyLogs} />
+            </div>
+          )}
+
           {/* Instars Performance Section */}
           {selectedCycle.instars && selectedCycle.instars.length > 0 && (
             <div>
@@ -317,6 +342,17 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
             </div>
           )}
 
+          {/* Daily Log Table */}
+          <div>
+            <h2 className="text-sm font-semibold text-foreground font-display mb-3">
+              Daily Log Entries
+              {dailyLogs.length > 0 && (
+                <span className="text-xs font-normal text-muted-foreground ml-2">({dailyLogs.length} entries)</span>
+              )}
+            </h2>
+            <DailyLogTable cycle={selectedCycle} logs={dailyLogs} />
+          </div>
+
           {/* Raw Data Summary */}
           <div className="glass-card rounded-xl p-5">
             <h3 className="text-sm font-semibold text-foreground font-display mb-4">Cycle {selectedCycle.cycleNumber} — Raw Data</h3>
@@ -339,6 +375,15 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
             </div>
           </div>
         </motion.div>
+      )}
+
+      {/* Daily Log Form Dialog */}
+      {selectedCycle && (
+        <DailyLogForm
+          cycle={selectedCycle}
+          open={logFormOpen}
+          onOpenChange={setLogFormOpen}
+        />
       )}
     </div>
   );
