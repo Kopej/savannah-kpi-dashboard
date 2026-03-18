@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
-import type { CycleData, Ticket, Assumptions } from './types';
+import type { CycleData, Ticket, Assumptions, DailyLog } from './types';
 import { SEED_CYCLES } from './seedData';
 import { DEFAULT_ASSUMPTIONS } from './calculations';
 

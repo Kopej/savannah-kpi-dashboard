@@ -96,6 +96,26 @@ export interface Assumptions {
   dryToReeledConversion: number;
 }
 
+export interface DailyLog {
+  id: string;
+  cycleId: string;
+  cycleNumber: number;
+  date: string; // ISO date
+  estimatedStartingEggCount: number;
+  hatchedEggs: number;
+  mortalityPreCocooning: number; // 0-1
+  mortalityCocooning: number; // 0-1
+  finalLarvaeWeight: number; // grams
+  totalLeafWeightFed: number; // grams
+  totalHarvestedWetCocoonWeight: number; // kg
+  percentNonDefective: number; // 0-1
+  avgWeightPerWetCocoon: number; // grams
+  avgShellRatio: number; // 0-1
+  // computed on read
+  hatchRate?: number;
+  totalMortality?: number;
+}
+
 export interface Ticket {
   id: string;
   ticketId: string;
