@@ -1,146 +1,346 @@
-import { useState, useMemo } from 'react';
-import type { CycleData, ComputedKPIs } from '@/lib/types';
-import { formatPercent, formatNumber, formatKg } from '@/lib/calculations';
-import { getTrafficLight, getTrafficLightDot } from '@/lib/kpiThresholds';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useState, useCallback, useEffect } from 'react';
+import type { CycleData, InstarData } from '@/lib/types';
+import { useAppState } from '@/lib/store';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ArrowUpDown, Download, Search } from 'lucide-react';
+import { toast } from 'sonner';
+import { Save, X, Pencil } from 'lucide-react';
 
 interface Props {
-  cyclesWithKPIs: (CycleData & { kpis: ComputedKPIs })[];
+  cycle: CycleData;
 }
 
-function StatusDot({ thresholdKey, value }: { thresholdKey: string; value: number }) {
-  const light = getTrafficLight(value, thresholdKey);
-  return <span className={`inline-block h-2 w-2 rounded-full ml-1 ${getTrafficLightDot(light)}`} />;
+const INSTAR_LABELS = ['Instar 1', 'Instar 2', 'Instar 3', 'Instar 4', 'Instar 5'];
+
+interface EditState {
+  instars: InstarData[];
+  finalLarvaeWeight: number;
+  cocooningMortality: number;
+  wetWeightAll: number;
+  wetWeightDefective: number;
+  avgWeightPerWetCocoon: number;
+  avgShellRatio: number;
 }
 
-export function CycleDataTable({ cyclesWithKPIs }: Props) {
-  const [search, setSearch] = useState('');
-  const [sortField, setSortField] = useState<'cycleNumber' | 'totalHarvestedWetCocoonWeight'>('cycleNumber');
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+function calcMortalityRate(mortality: number, hatchedEggs: number): number {
+  if (hatchedEggs <= 0) return 0;
+  return mortality / hatchedEggs;
+}
 
-  const filtered = useMemo(() => {
-    let data = [...cyclesWithKPIs];
-    if (search) {
-      data = data.filter(c => `Cycle ${c.cycleNumber}`.toLowerCase().includes(search.toLowerCase()));
-    }
-    data.sort((a, b) => {
-      const diff = a[sortField] - b[sortField];
-      return sortDir === 'asc' ? diff : -diff;
+function calcCumulativeMortality(instars: InstarData[], upToIndex: number, hatchedEggs: number): number {
+  if (hatchedEggs <= 0) return 0;
+  let total = 0;
+  for (let i = 0; i <= upToIndex; i++) {
+    total += instars[i].mortality;
+  }
+  return total / hatchedEggs;
+}
+
+export function CycleDataTable({ cycle }: Props) {
+  const { updateCycleData } = useAppState();
+  const [editing, setEditing] = useState(false);
+  const [saved, setSaved] = useState(true);
+
+  const buildState = useCallback((): EditState => {
+    const instars: InstarData[] = (cycle.instars && cycle.instars.length === 5)
+      ? cycle.instars.map(i => ({ ...i }))
+      : Array.from({ length: 5 }, (_, idx) => ({
+          instar: idx + 1,
+          durationDays: 0,
+          totalLeafWeightFedG: 0,
+          mortality: 0,
+          mortalityRatePercent: 0,
+          cumulativeMortalityRatePercent: 0,
+        }));
+
+    return {
+      instars,
+      finalLarvaeWeight: cycle.finalLarvaeWeight || 0,
+      cocooningMortality: cycle.mortalityCocooning > 0 && cycle.mortalityCocooning < 1
+        ? Math.round(cycle.mortalityCocooning * cycle.hatchedEggs)
+        : 0,
+      wetWeightAll: cycle.totalHarvestedWetCocoonWeight || 0,
+      wetWeightDefective: cycle.totalHarvestedWetCocoonWeight > 0
+        ? Math.round((cycle.totalHarvestedWetCocoonWeight * (1 - cycle.percentNonDefective)) * 100) / 100
+        : 0,
+      avgWeightPerWetCocoon: cycle.avgWeightPerWetCocoon || 0,
+      avgShellRatio: Math.round((cycle.avgShellRatio || 0) * 100 * 100) / 100,
+    };
+  }, [cycle]);
+
+  const [state, setState] = useState<EditState>(buildState);
+
+  useEffect(() => {
+    if (!editing) setState(buildState());
+  }, [cycle, editing, buildState]);
+
+  const updateInstar = (idx: number, field: keyof InstarData, value: number) => {
+    setState(prev => {
+      const instars = prev.instars.map((inst, i) => {
+        if (i !== idx) return inst;
+        return { ...inst, [field]: value };
+      });
+      const hatchedEggs = cycle.hatchedEggs;
+      const recalced = instars.map((inst, i) => ({
+        ...inst,
+        mortalityRatePercent: calcMortalityRate(inst.mortality, hatchedEggs),
+        cumulativeMortalityRatePercent: calcCumulativeMortality(instars, i, hatchedEggs),
+      }));
+      return { ...prev, instars: recalced };
     });
-    return data;
-  }, [cyclesWithKPIs, search, sortField, sortDir]);
-
-  const toggleSort = (field: typeof sortField) => {
-    if (sortField === field) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
-    else { setSortField(field); setSortDir('asc'); }
+    setSaved(false);
   };
 
-  const exportCSV = () => {
-    const headers = ['Cycle', 'Hatch Date', 'Eggs', 'Hatched', 'Hatch Rate', 'Worms', 'Survival', 'Worm Wt (g)', 'Cocoon Wt (kg)', 'Shell %', 'Wt/Cocoon (g)', 'Yield/DFL (g)', 'Feed/kg Cocoon', 'Reelability'];
-    const rows = filtered.map(c => {
-      const yieldPerDFL = c.kpis.dflsBrushed > 0 ? (c.totalHarvestedWetCocoonWeight / c.kpis.dflsBrushed * 1000).toFixed(0) : '0';
-      return [
-        c.cycleNumber, c.hatchDate, c.totalEggs || c.estimatedStartingEggCount, c.hatchedEggs,
-        formatPercent(c.kpis.hatchRate), c.kpis.totalWormCount,
-        formatPercent(1 - c.kpis.totalMortality), c.finalLarvaeWeight,
-        c.totalHarvestedWetCocoonWeight, formatPercent(c.avgShellRatio),
-        c.avgWeightPerWetCocoon, yieldPerDFL,
-        c.kpis.leafShootPerKgWetCocoon.toFixed(1), formatPercent(c.kpis.reelability),
-      ];
+  const updateField = (field: keyof Omit<EditState, 'instars'>, value: number) => {
+    setState(prev => ({ ...prev, [field]: value }));
+    setSaved(false);
+  };
+
+  const handleSave = () => {
+    const totalFeed = state.instars.reduce((s, i) => s + i.totalLeafWeightFedG, 0);
+    const totalInstarMortality = state.instars.reduce((s, i) => s + i.mortality, 0);
+    const preCocooningMort = cycle.hatchedEggs > 0 ? totalInstarMortality / cycle.hatchedEggs : 0;
+    const cocooningMortPercent = cycle.hatchedEggs > 0 ? state.cocooningMortality / cycle.hatchedEggs : 0;
+    const nonDefectivePercent = state.wetWeightAll > 0
+      ? (state.wetWeightAll - state.wetWeightDefective) / state.wetWeightAll
+      : 0;
+
+    updateCycleData(cycle.id, {
+      instars: state.instars,
+      finalLarvaeWeight: state.finalLarvaeWeight,
+      totalLeafWeightFed: totalFeed,
+      mortalityPreCocooning: preCocooningMort,
+      mortalityCocooning: cocooningMortPercent,
+      totalHarvestedWetCocoonWeight: state.wetWeightAll,
+      percentNonDefective: Math.max(0, nonDefectivePercent),
+      avgWeightPerWetCocoon: state.avgWeightPerWetCocoon,
+      avgShellRatio: state.avgShellRatio / 100,
     });
-    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'kpi_cycles.csv'; a.click();
-    URL.revokeObjectURL(url);
+
+    setSaved(true);
+    setEditing(false);
+    toast.success(`Cycle ${cycle.cycleNumber} data updated`);
+  };
+
+  const handleCancel = () => {
+    setState(buildState());
+    setEditing(false);
+    setSaved(true);
+  };
+
+  const cocooningMortPercent = cycle.hatchedEggs > 0
+    ? ((state.cocooningMortality / cycle.hatchedEggs) * 100).toFixed(2)
+    : '0.00';
+
+  const cellBase = "py-2.5 px-3 text-sm text-right border border-border/40";
+  const headerCell = "py-2.5 px-3 text-xs font-semibold uppercase tracking-wide text-right border border-border/40";
+  const labelCell = "py-2.5 px-3 text-xs font-medium text-left text-muted-foreground border border-border/40 bg-muted/30 whitespace-nowrap";
+  const editableCell = `${cellBase} bg-primary/5`;
+
+  const EditableNum = ({ value, onChange, step = '1', disabled = false }: {
+    value: number; onChange: (v: number) => void; step?: string; disabled?: boolean;
+  }) => {
+    if (!editing || disabled) {
+      return <span className="text-foreground font-medium">{value || '—'}</span>;
+    }
+    return (
+      <Input
+        type="number"
+        step={step}
+        min="0"
+        value={value || ''}
+        onChange={e => onChange(parseFloat(e.target.value) || 0)}
+        className="h-7 w-full text-right text-sm border-0 bg-transparent focus:bg-background p-1"
+      />
+    );
   };
 
   return (
-    <div className="glass-card rounded-xl p-5">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-foreground font-display">Cycle Performance Breakdown</h3>
-        <div className="flex items-center gap-2">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-            <Input placeholder="Search cycles..." value={search} onChange={e => setSearch(e.target.value)} className="pl-8 h-9 w-48 text-sm" />
-          </div>
-          <Button variant="outline" size="sm" onClick={exportCSV}>
-            <Download className="h-3.5 w-3.5 mr-1.5" />CSV
+    <div className="space-y-4">
+      {/* Toolbar */}
+      <div className="flex items-center gap-2">
+        {!editing ? (
+          <Button onClick={() => setEditing(true)} size="sm" className="kpi-gradient border-0 text-primary-foreground gap-1.5">
+            <Pencil className="h-3.5 w-3.5" />
+            Edit Cycle Data
           </Button>
+        ) : (
+          <>
+            <Button onClick={handleSave} size="sm" className="kpi-gradient border-0 text-primary-foreground gap-1.5">
+              <Save className="h-3.5 w-3.5" />
+              Save Changes
+            </Button>
+            <Button onClick={handleCancel} size="sm" variant="outline" className="gap-1.5">
+              <X className="h-3.5 w-3.5" />
+              Cancel
+            </Button>
+          </>
+        )}
+        {!saved && editing && (
+          <span className="text-xs text-warning font-medium animate-pulse">Unsaved changes</span>
+        )}
+        {saved && !editing && (
+          <span className="text-xs text-success font-medium">✓ Saved</span>
+        )}
+      </div>
+
+      {/* Instar Table */}
+      <div className="glass-card rounded-xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="bg-primary/10">
+                <th className={`${headerCell} text-left min-w-[180px]`}>Metric</th>
+                {INSTAR_LABELS.map(label => (
+                  <th key={label} className={`${headerCell} min-w-[110px]`}>{label}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {/* Duration */}
+              <tr className="hover:bg-muted/20">
+                <td className={labelCell}>Duration (days)</td>
+                {state.instars.map((inst, i) => (
+                  <td key={i} className={editing ? editableCell : cellBase}>
+                    <EditableNum value={inst.durationDays} onChange={v => updateInstar(i, 'durationDays', v)} />
+                  </td>
+                ))}
+              </tr>
+
+              {/* Total Leaf Weight Fed */}
+              <tr className="hover:bg-muted/20">
+                <td className={labelCell}>Total Leaf Weight Fed (g)</td>
+                {state.instars.map((inst, i) => (
+                  <td key={i} className={editing ? editableCell : cellBase}>
+                    <EditableNum value={inst.totalLeafWeightFedG} onChange={v => updateInstar(i, 'totalLeafWeightFedG', v)} />
+                  </td>
+                ))}
+              </tr>
+
+              {/* Mortality (number) */}
+              <tr className="hover:bg-muted/20">
+                <td className={labelCell}>Mortality</td>
+                {state.instars.map((inst, i) => (
+                  <td key={i} className={editing ? editableCell : cellBase}>
+                    <EditableNum value={inst.mortality} onChange={v => updateInstar(i, 'mortality', v)} step="0.1" />
+                  </td>
+                ))}
+              </tr>
+
+              {/* Mortality Rate % (auto) */}
+              <tr className="bg-muted/10 hover:bg-muted/20">
+                <td className={labelCell}>
+                  Mortality Rate (%)
+                  <span className="text-[9px] text-primary ml-1">auto</span>
+                </td>
+                {state.instars.map((inst, i) => (
+                  <td key={i} className={cellBase}>
+                    <span className="text-foreground font-medium">
+                      {(inst.mortalityRatePercent * 100).toFixed(2)}%
+                    </span>
+                  </td>
+                ))}
+              </tr>
+
+              {/* Cumulative Mortality Rate % (auto) */}
+              <tr className="bg-muted/10 hover:bg-muted/20">
+                <td className={labelCell}>
+                  Cumulative Mortality (%)
+                  <span className="text-[9px] text-primary ml-1">auto</span>
+                </td>
+                {state.instars.map((inst, i) => (
+                  <td key={i} className={cellBase}>
+                    <span className="text-foreground font-medium">
+                      {(inst.cumulativeMortalityRatePercent * 100).toFixed(2)}%
+                    </span>
+                  </td>
+                ))}
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="cursor-pointer" onClick={() => toggleSort('cycleNumber')}>
-                Cycle <ArrowUpDown className="inline h-3 w-3 ml-1" />
-              </TableHead>
-              <TableHead>Eggs</TableHead>
-              <TableHead>Hatch Rate</TableHead>
-              <TableHead>Worms</TableHead>
-              <TableHead>Survival</TableHead>
-              <TableHead>Worm Wt</TableHead>
-              <TableHead className="cursor-pointer" onClick={() => toggleSort('totalHarvestedWetCocoonWeight')}>
-                Cocoons (kg) <ArrowUpDown className="inline h-3 w-3 ml-1" />
-              </TableHead>
-              <TableHead>Shell %</TableHead>
-              <TableHead>Cocoon Wt</TableHead>
-              <TableHead>Yield/DFL</TableHead>
-              <TableHead>Feed/Cocoon</TableHead>
-              <TableHead>Reelability</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filtered.map(c => {
-              const survivalRate = 1 - c.kpis.totalMortality;
-              const yieldPerDFL = c.kpis.dflsBrushed > 0 ? c.totalHarvestedWetCocoonWeight / c.kpis.dflsBrushed : 0;
-              return (
-                <TableRow key={c.id}>
-                  <TableCell className="font-medium">C{c.cycleNumber}</TableCell>
-                  <TableCell>{formatNumber(c.totalEggs || c.estimatedStartingEggCount)}</TableCell>
-                  <TableCell>
-                    {formatPercent(c.kpis.hatchRate)}
-                    <StatusDot thresholdKey="hatchRate" value={c.kpis.hatchRate} />
-                  </TableCell>
-                  <TableCell>{formatNumber(c.kpis.totalWormCount)}</TableCell>
-                  <TableCell>
-                    {formatPercent(survivalRate)}
-                    <StatusDot thresholdKey="survivalRate" value={survivalRate} />
-                  </TableCell>
-                  <TableCell>
-                    {c.finalLarvaeWeight}g
-                    <StatusDot thresholdKey="wormWeight" value={c.finalLarvaeWeight} />
-                  </TableCell>
-                  <TableCell>{formatKg(c.totalHarvestedWetCocoonWeight)}</TableCell>
-                  <TableCell>
-                    {formatPercent(c.avgShellRatio)}
-                    <StatusDot thresholdKey="shellRatio" value={c.avgShellRatio} />
-                  </TableCell>
-                  <TableCell>{c.avgWeightPerWetCocoon}g</TableCell>
-                  <TableCell>
-                    {(yieldPerDFL * 1000).toFixed(0)}g
-                    <StatusDot thresholdKey="yieldPerDFL" value={yieldPerDFL} />
-                  </TableCell>
-                  <TableCell>
-                    {c.kpis.leafShootPerKgWetCocoon > 0 && isFinite(c.kpis.leafShootPerKgWetCocoon)
-                      ? `${c.kpis.leafShootPerKgWetCocoon.toFixed(1)}x`
-                      : '—'}
-                  </TableCell>
-                  <TableCell>
-                    {c.kpis.reelability > 0 ? formatPercent(c.kpis.reelability) : '—'}
-                    {c.kpis.reelability > 0 && <StatusDot thresholdKey="nonDefective" value={c.kpis.reelability} />}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+
+      {/* Additional Fields Below Table */}
+      <div className="glass-card rounded-xl p-5">
+        <h3 className="text-sm font-semibold text-foreground font-display mb-4">Cycle Summary Metrics</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <MetricField
+            label="Final Larvae Weight (g)"
+            value={state.finalLarvaeWeight}
+            onChange={v => updateField('finalLarvaeWeight', v)}
+            editing={editing}
+            step="0.01"
+          />
+          <MetricField
+            label="Cocooning Mortality"
+            value={state.cocooningMortality}
+            onChange={v => updateField('cocooningMortality', v)}
+            editing={editing}
+          />
+          <div className="space-y-1.5">
+            <label className="text-[11px] uppercase tracking-wide text-muted-foreground">
+              Cocooning Mortality (%)
+              <span className="text-[9px] text-primary ml-1">auto</span>
+            </label>
+            <div className="h-9 flex items-center px-3 rounded-md bg-muted/30 text-sm font-medium text-foreground">
+              {cocooningMortPercent}%
+            </div>
+          </div>
+          <MetricField
+            label="Wet Weight – All Cocoons (kg)"
+            value={state.wetWeightAll}
+            onChange={v => updateField('wetWeightAll', v)}
+            editing={editing}
+            step="0.01"
+          />
+          <MetricField
+            label="Wet Weight – Defective Cocoons (kg)"
+            value={state.wetWeightDefective}
+            onChange={v => updateField('wetWeightDefective', v)}
+            editing={editing}
+            step="0.01"
+          />
+          <MetricField
+            label="Average Weight per Wet Cocoon (g)"
+            value={state.avgWeightPerWetCocoon}
+            onChange={v => updateField('avgWeightPerWetCocoon', v)}
+            editing={editing}
+            step="0.01"
+          />
+          <MetricField
+            label="Average Shell Ratio (%)"
+            value={state.avgShellRatio}
+            onChange={v => updateField('avgShellRatio', v)}
+            editing={editing}
+            step="0.1"
+          />
+        </div>
       </div>
+    </div>
+  );
+}
+
+function MetricField({ label, value, onChange, editing, step = '1' }: {
+  label: string; value: number; onChange: (v: number) => void; editing: boolean; step?: string;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <label className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</label>
+      {editing ? (
+        <Input
+          type="number"
+          step={step}
+          min="0"
+          value={value || ''}
+          onChange={e => onChange(parseFloat(e.target.value) || 0)}
+          className="h-9"
+        />
+      ) : (
+        <div className="h-9 flex items-center px-3 rounded-md bg-muted/30 text-sm font-medium text-foreground">
+          {value || '—'}
+        </div>
+      )}
     </div>
   );
 }
