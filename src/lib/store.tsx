@@ -40,7 +40,6 @@ function dbRowToCycle(row: any): CycleData {
     cycleDurationDays: row.cycle_duration_days ?? undefined,
     wetCocoonTarget: row.wet_cocoon_target != null ? Number(row.wet_cocoon_target) : undefined,
     currentDayOfCycle: row.current_day_of_cycle ?? undefined,
-    defectiveCocoonWeightKg: row.defective_cocoon_weight_kg != null ? Number(row.defective_cocoon_weight_kg) : undefined,
   };
 }
 
