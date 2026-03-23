@@ -189,8 +189,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // ── Cycle operations ──
 
   const addCycle = useCallback(async (cycle: CycleData) => {
-    setCycles(prev => [...prev, cycle]);
-    const { error } = await supabase.from('cycles').insert(cycleToDbRow(cycle));
+    // Generate proper UUID for new cycles
+    const dbRow = cycleToDbRow(cycle);
+    dbRow.id = crypto.randomUUID();
+    const newCycle = { ...cycle, id: dbRow.id };
+    setCycles(prev => [...prev, newCycle]);
+    const { error } = await supabase.from('cycles').insert(dbRow);
     if (error) console.error('[Store] addCycle error:', error);
   }, []);
 
