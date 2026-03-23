@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend, ComposedChart } from 'recharts';
 import type { CycleData, ComputedKPIs } from '@/lib/types';
 
 interface Props {
@@ -52,7 +52,7 @@ export function KPICharts({ cyclesWithKPIs }: Props) {
         <h3 className="text-sm font-semibold text-foreground mb-1 font-display">Yield & DFLs per Cycle</h3>
         <p className="text-[10px] text-muted-foreground mb-4">Avg Yield: {avgYield} kg · Avg DFLs: {avg(chartData.map(d => d.dfls)).toFixed(0)}</p>
         <ResponsiveContainer width="100%" height={260}>
-          <BarChart data={chartData}>
+          <ComposedChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(170 15% 88%)" />
             <XAxis dataKey="cycle" tick={{ fontSize: 11 }} />
             <YAxis yAxisId="left" tick={{ fontSize: 11 }} />
@@ -60,8 +60,8 @@ export function KPICharts({ cyclesWithKPIs }: Props) {
             <Tooltip {...tooltipStyle} />
             <Legend wrapperStyle={{ fontSize: 11 }} />
             <Bar yAxisId="left" dataKey="yield" fill="hsl(174, 62%, 32%)" radius={[4, 4, 0, 0]} name="Wet Cocoon (kg)" />
-            <Bar yAxisId="right" dataKey="dfls" fill="hsl(199, 89%, 48%)" radius={[4, 4, 0, 0]} name="Total DFLs" />
-          </BarChart>
+            <Line yAxisId="right" type="monotone" dataKey="dfls" stroke="hsl(199, 89%, 48%)" strokeWidth={2} dot={{ r: 4 }} name="Total DFLs" />
+          </ComposedChart>
         </ResponsiveContainer>
       </div>
 
