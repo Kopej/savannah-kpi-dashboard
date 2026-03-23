@@ -3,7 +3,7 @@ import type { CycleData, Assumptions, ComputedKPIs } from '@/lib/types';
 import { computeCycleKPIs, computeSummaryKPIs, formatPercent, formatNumber, formatKg, getFinishedCycles } from '@/lib/calculations';
 import { KPICard } from '@/components/KPICard';
 import { KPICharts } from '@/components/KPICharts';
-import { CycleDataTable } from '@/components/CycleDataTable';
+import { FinishedCycleTable } from '@/components/FinishedCycleTable';
 import { ConversionFunnel } from '@/components/ConversionFunnel';
 import { getTrafficLight } from '@/lib/kpiThresholds';
 import { Activity, Bug, Factory, Scale, TrendingUp, Weight, Layers, Leaf, ArrowRightLeft, Sparkles } from 'lucide-react';
