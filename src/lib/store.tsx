@@ -113,7 +113,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   return (
     <AppContext.Provider value={{
       cycles, tickets, dailyLogs, assumptions,
-      addCycle, addTicket, updateTicket, markCycleFinished,
+      addCycle, addTicket, updateTicket, markCycleFinished, updateCycleData,
       addDailyLog, updateDailyLog, deleteDailyLog, getDailyLogsForCycle,
     }}>
       {children}
