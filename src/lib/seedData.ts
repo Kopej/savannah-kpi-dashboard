@@ -77,7 +77,7 @@ export const SEED_CYCLES: CycleData[] = [
     finalLarvaeWeight: 0, totalLeafWeightFed: 0,
     totalHarvestedWetCocoonWeight: 0, percentNonDefective: 0,
     avgWeightPerWetCocoon: 0, avgShellRatio: 0,
-    totalEggs: 28000, hatchRatePercent: 0.95,
+    totalEggs: 28000, hatchRatePercent: 0.95, cycleDurationDays: 27,
   },
   {
     id: uid(), cycleNumber: 16, hatchDate: '2026-02-02', status: 'finished',
