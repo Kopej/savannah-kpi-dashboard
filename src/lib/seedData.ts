@@ -65,7 +65,7 @@ export const SEED_CYCLES: CycleData[] = [
     finalLarvaeWeight: 3.03, totalLeafWeightFed: 994930,
     totalHarvestedWetCocoonWeight: 27.36, percentNonDefective: 0.91,
     avgWeightPerWetCocoon: 1.69, avgShellRatio: 0.21,
-    totalEggs: 28000, hatchRatePercent: 0.95,
+    totalEggs: 28000, hatchRatePercent: 0.95, cycleDurationDays: 30,
     // Cycle 14 special: dried + reeled data
     driedCocoonWeightKg: 27,
     reeledSilkWeightKg: 7,
