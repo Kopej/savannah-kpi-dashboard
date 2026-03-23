@@ -270,9 +270,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // ── Daily Log operations ──
 
   const addDailyLog = useCallback(async (log: DailyLog) => {
-    setDailyLogs(prev => [...prev, log]);
+    const newId = crypto.randomUUID();
+    const newLog = { ...log, id: newId };
+    setDailyLogs(prev => [...prev, newLog]);
     const { error } = await supabase.from('daily_logs').insert({
-      id: log.id,
       cycle_id: log.cycleId,
       cycle_number: log.cycleNumber,
       date: log.date,
