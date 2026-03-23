@@ -261,9 +261,15 @@ export function CycleDataTable({ cycle }: Props) {
         </div>
       </div>
 
-      {/* Additional Fields Below Table */}
-      <div className="glass-card rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-foreground font-display mb-4">Cycle Summary Metrics</h3>
+      {/* End of Cycle Summary */}
+      <div className="rounded-xl border-2 border-primary/30 bg-primary/[0.03] p-5 space-y-4">
+        <div className="flex items-center gap-2 mb-1">
+          <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+          <h3 className="text-sm font-bold text-foreground font-display tracking-wide uppercase">
+            End of Cycle Summary
+          </h3>
+          <span className="text-[10px] text-muted-foreground ml-1">Completion-critical data</span>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <MetricField
             label="Final Larvae Weight (g)"
@@ -283,7 +289,7 @@ export function CycleDataTable({ cycle }: Props) {
               Cocooning Mortality (%)
               <span className="text-[9px] text-primary ml-1">auto</span>
             </label>
-            <div className="h-9 flex items-center px-3 rounded-md bg-muted/30 text-sm font-medium text-foreground">
+            <div className="h-9 flex items-center px-3 rounded-md bg-muted/30 text-sm font-medium text-foreground border border-border/40">
               {cocooningMortPercent}%
             </div>
           </div>
