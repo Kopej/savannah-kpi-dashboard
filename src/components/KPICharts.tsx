@@ -48,7 +48,7 @@ export function KPICharts({ cyclesWithKPIs }: Props) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <div className="glass-card rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-foreground mb-1 font-display">Yield per Cycle (kg)</h3>
+        <h3 className="text-sm font-semibold text-foreground mb-1 font-display">Yield per Cycle (kg of Wet Cocoon)</h3>
         <p className="text-[10px] text-muted-foreground mb-4">Average: {avgYield} kg</p>
         <ResponsiveContainer width="100%" height={260}>
           <BarChart data={chartData}>
