@@ -68,6 +68,11 @@ export function FinishedCyclesDashboard({ cycles, assumptions }: Props) {
     [yearFilteredCycles, assumptions]
   );
 
+  const activeCyclesWithKPIs = useMemo(() =>
+    activeCycles.map(c => ({ ...c, kpis: computeCycleKPIs(c, assumptions) })),
+    [activeCycles, assumptions]
+  );
+
   // For funnel in multi-select, create an averaged pseudo-cycle
   const funnelCycle = singleCycle;
   const funnelKPIs = singleKPIs;
@@ -229,7 +234,7 @@ export function FinishedCyclesDashboard({ cycles, assumptions }: Props) {
       )}
 
       {/* Trend Charts */}
-      <KPICharts cyclesWithKPIs={cyclesWithKPIs} />
+      <KPICharts cyclesWithKPIs={activeCyclesWithKPIs} />
 
       {/* Data Table */}
       <FinishedCycleTable cyclesWithKPIs={cyclesWithKPIs} />
