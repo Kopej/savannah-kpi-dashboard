@@ -148,7 +148,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         // If DB is empty, seed it
         if (!cycleRows || cycleRows.length === 0) {
           console.log('[Store] No cycles in DB, seeding...');
-          const seedRows = SEED_CYCLES.map(cycleToDbRow);
+          // Omit id so DB generates proper UUIDs
+          const seedRows = SEED_CYCLES.map(c => {
+            const { id, ...row } = cycleToDbRow(c);
+            return row;
+          });
           const { data: inserted, error: seedErr } = await supabase
             .from('cycles')
             .insert(seedRows)
