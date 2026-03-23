@@ -49,15 +49,18 @@ export function KPICharts({ cyclesWithKPIs }: Props) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <div className="glass-card rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-foreground mb-1 font-display">Yield per Cycle (kg of Wet Cocoon)</h3>
-        <p className="text-[10px] text-muted-foreground mb-4">Average: {avgYield} kg</p>
+        <h3 className="text-sm font-semibold text-foreground mb-1 font-display">Yield & DFLs per Cycle</h3>
+        <p className="text-[10px] text-muted-foreground mb-4">Avg Yield: {avgYield} kg · Avg DFLs: {avg(chartData.map(d => d.dfls)).toFixed(0)}</p>
         <ResponsiveContainer width="100%" height={260}>
           <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(170 15% 88%)" />
             <XAxis dataKey="cycle" tick={{ fontSize: 11 }} />
-            <YAxis tick={{ fontSize: 11 }} />
+            <YAxis yAxisId="left" tick={{ fontSize: 11 }} />
+            <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} />
             <Tooltip {...tooltipStyle} />
-            <Bar dataKey="yield" fill="hsl(174, 62%, 32%)" radius={[4, 4, 0, 0]} name="Wet Cocoon (kg)" />
+            <Legend wrapperStyle={{ fontSize: 11 }} />
+            <Bar yAxisId="left" dataKey="yield" fill="hsl(174, 62%, 32%)" radius={[4, 4, 0, 0]} name="Wet Cocoon (kg)" />
+            <Bar yAxisId="right" dataKey="dfls" fill="hsl(199, 89%, 48%)" radius={[4, 4, 0, 0]} name="Total DFLs" />
           </BarChart>
         </ResponsiveContainer>
       </div>
