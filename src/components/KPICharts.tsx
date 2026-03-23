@@ -55,8 +55,8 @@ export function KPICharts({ cyclesWithKPIs }: Props) {
           <ComposedChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(170 15% 88%)" />
             <XAxis dataKey="cycle" tick={{ fontSize: 11 }} />
-            <YAxis yAxisId="left" tick={{ fontSize: 11 }} />
-            <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} />
+            <YAxis yAxisId="left" tick={{ fontSize: 11 }} label={{ value: 'Wet Cocoon (kg)', angle: -90, position: 'insideLeft', style: { fontSize: 10, fill: 'hsl(174, 62%, 32%)' } }} />
+            <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} label={{ value: 'Total DFLs', angle: 90, position: 'insideRight', style: { fontSize: 10, fill: 'hsl(199, 89%, 48%)' } }} />
             <Tooltip {...tooltipStyle} />
             <Legend wrapperStyle={{ fontSize: 11 }} />
             <Bar yAxisId="left" dataKey="yield" fill="hsl(174, 62%, 32%)" radius={[4, 4, 0, 0]} name="Wet Cocoon (kg)" />
