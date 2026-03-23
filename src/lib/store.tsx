@@ -65,6 +65,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setCycles(prev => prev.map(c => c.id === id ? { ...c, status: 'finished' as const } : c));
   }, []);
 
+  const updateCycleData = useCallback((id: string, updates: Partial<CycleData>) => {
+    setCycles(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
+  }, []);
+
   const addDailyLog = useCallback((log: DailyLog) => {
     setDailyLogs(prev => [...prev, log]);
     // Update the parent cycle with cumulative data
