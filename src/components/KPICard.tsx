@@ -34,7 +34,7 @@ export function KPICard({ title, value, subtitle, target, icon: Icon, trafficLig
               <span className="text-muted-foreground">Target: {target}</span>
             </p>
           )}
-          {subtitle && !target && (
+          {subtitle && (
             <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
           )}
         </div>

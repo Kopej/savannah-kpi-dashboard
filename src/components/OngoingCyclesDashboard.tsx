@@ -222,14 +222,27 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
                 icon={Leaf}
                 delay={0.12}
               />
-              <KPICard
-                title="Larvae Weight"
-                value={selectedCycle.finalLarvaeWeight > 0 ? `${selectedCycle.finalLarvaeWeight.toFixed(2)}g` : '—'}
-                target="≥ 5.0g"
-                icon={Weight}
-                trafficLight={selectedCycle.finalLarvaeWeight > 0 ? getTrafficLight(selectedCycle.finalLarvaeWeight, 'wormWeight') : undefined}
-                delay={0.15}
-              />
+              {(() => {
+                // Find latest instar with avgLarvaeWeight data
+                const instars = selectedCycle.instars || [];
+                const latestInstarWithWeight = [...instars].reverse().find(i => i.avgLarvaeWeight && i.avgLarvaeWeight > 0);
+                const latestWeight = latestInstarWithWeight?.avgLarvaeWeight ?? selectedCycle.finalLarvaeWeight;
+                const latestInstarNum = latestInstarWithWeight?.instar;
+                const subtitleParts: string[] = [];
+                if (latestInstarNum) subtitleParts.push(`Instar ${latestInstarNum}`);
+                
+                return (
+                  <KPICard
+                    title="Latest Larvae Weight"
+                    value={latestWeight > 0 ? `${latestWeight.toFixed(2)}g` : '—'}
+                    target="≥ 5.0g at end of cycle"
+                    subtitle={subtitleParts.length > 0 ? subtitleParts.join(' · ') : undefined}
+                    icon={Weight}
+                    trafficLight={undefined}
+                    delay={0.15}
+                  />
+                );
+              })()}
             </div>
           </div>
 
