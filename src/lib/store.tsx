@@ -12,6 +12,7 @@ interface AppState {
   addTicket: (ticket: Ticket) => void;
   updateTicket: (id: string, updates: Partial<Ticket>) => void;
   markCycleFinished: (id: string) => void;
+  updateCycleData: (id: string, updates: Partial<CycleData>) => void;
   addDailyLog: (log: DailyLog) => void;
   updateDailyLog: (id: string, updates: Partial<DailyLog>) => void;
   deleteDailyLog: (id: string) => void;

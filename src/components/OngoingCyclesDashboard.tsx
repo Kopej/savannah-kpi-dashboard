@@ -3,14 +3,12 @@ import type { CycleData, Assumptions } from '@/lib/types';
 import { computeCycleKPIs, formatPercent, formatNumber, getOngoingCycles } from '@/lib/calculations';
 import { KPICard } from '@/components/KPICard';
 import { getTrafficLight } from '@/lib/kpiThresholds';
-import { Egg, Activity, Skull, Leaf, Weight, Layers, CheckCircle2, Scale, Calendar, Plus } from 'lucide-react';
+import { Egg, Activity, Skull, Leaf, Weight, Layers, CheckCircle2, Scale, Calendar } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from 'recharts';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useAppState } from '@/lib/store';
-import { DailyLogForm } from './DailyLogForm';
-import { DailyLogTable } from './DailyLogTable';
-import { DailyLogCharts } from './DailyLogCharts';
+import { CycleDataTable } from './CycleDataTable';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,17 +27,15 @@ interface Props {
 }
 
 export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
-  const { markCycleFinished, getDailyLogsForCycle } = useAppState();
+  const { markCycleFinished } = useAppState();
   const ongoingCycles = useMemo(() => getOngoingCycles(cycles), [cycles]);
 
   const [selectedCycleId, setSelectedCycleId] = useState<string>(
     ongoingCycles.length > 0 ? ongoingCycles[0].id : ''
   );
-  const [logFormOpen, setLogFormOpen] = useState(false);
 
   const selectedCycle = ongoingCycles.find(c => c.id === selectedCycleId) || ongoingCycles[0] || null;
   const kpis = selectedCycle ? computeCycleKPIs(selectedCycle, assumptions) : null;
-  const dailyLogs = selectedCycle ? getDailyLogsForCycle(selectedCycle.id) : [];
 
   if (ongoingCycles.length === 0) {
     return (
@@ -60,8 +56,7 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
     const hatch = new Date(selectedCycle.hatchDate);
     const now = new Date();
     const diffMs = now.getTime() - hatch.getTime();
-    const diffDays = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
-    return diffDays;
+    return Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
   })() : 0;
 
   // Instar chart data
@@ -71,7 +66,6 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
       instar: `Instar ${i.instar}`,
       feedKg: Math.round(i.totalLeafWeightFedG / 100) / 10,
       feedPerDFL: Math.round(feedPerDFL * 100) / 100,
-      target: i.feedPerDFLTarget || 0,
       days: i.durationDays,
     };
   }) || [];
@@ -93,7 +87,7 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
 
   return (
     <div className="space-y-6">
-      {/* Cycle Toggle + Day of Cycle + Add Log */}
+      {/* Cycle Toggle + Day of Cycle */}
       <div className="flex items-center gap-3 flex-wrap">
         <span className="text-sm font-medium text-muted-foreground">Select Cycle:</span>
         <div className="flex gap-2">
@@ -112,7 +106,6 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
           ))}
         </div>
 
-        {/* Day of Cycle badge */}
         {selectedCycle && currentDayOfCycle > 0 && (
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-primary/15 text-primary">
             <Calendar className="h-3.5 w-3.5" />
@@ -123,14 +116,6 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-warning/15 text-warning">
           Ongoing
         </span>
-
-        {/* Add Daily Log */}
-        {selectedCycle && (
-          <Button onClick={() => setLogFormOpen(true)} size="sm" className="kpi-gradient border-0 text-primary-foreground gap-1.5">
-            <Plus className="h-3.5 w-3.5" />
-            Add Daily Log
-          </Button>
-        )}
 
         {/* Mark as Finished */}
         {selectedCycle && (
@@ -240,72 +225,20 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
             </div>
           </div>
 
-          {/* Daily Log Time-Series Charts */}
-          {dailyLogs.length >= 2 && (
-            <div>
-              <h2 className="text-sm font-semibold text-foreground font-display mb-3">
-                Daily Trends
-              </h2>
-              <DailyLogCharts logs={dailyLogs} />
-            </div>
-          )}
+          {/* Editable Instar Table */}
+          <div>
+            <h2 className="text-sm font-semibold text-foreground font-display mb-3">
+              Instar Performance Data
+            </h2>
+            <CycleDataTable cycle={selectedCycle} />
+          </div>
 
-          {/* Instars Performance Section */}
+          {/* Instar Charts */}
           {selectedCycle.instars && selectedCycle.instars.length > 0 && (
             <div>
               <h2 className="text-sm font-semibold text-foreground font-display mb-3">
-                Instar Performance
+                Instar Charts
               </h2>
-
-              {/* Instar Data Table */}
-              <div className="glass-card rounded-xl p-5 mb-4 overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-border">
-                      <th className="text-left py-2 px-3 text-xs uppercase tracking-wide text-muted-foreground">Instar</th>
-                      <th className="text-right py-2 px-3 text-xs uppercase tracking-wide text-muted-foreground">Duration (days)</th>
-                      <th className="text-right py-2 px-3 text-xs uppercase tracking-wide text-muted-foreground">Feed (kg)</th>
-                      <th className="text-right py-2 px-3 text-xs uppercase tracking-wide text-muted-foreground">Feed/DFL (kg)</th>
-                      <th className="text-right py-2 px-3 text-xs uppercase tracking-wide text-muted-foreground">Mortality %</th>
-                      <th className="text-right py-2 px-3 text-xs uppercase tracking-wide text-muted-foreground">Cumulative %</th>
-                      <th className="text-right py-2 px-3 text-xs uppercase tracking-wide text-muted-foreground">Avg Worm Wt (g)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selectedCycle.instars.map(i => {
-                      const feedPerDFL = dflsBrushed > 0 ? (i.totalLeafWeightFedG / 1000) / dflsBrushed : 0;
-                      const avgWeight = i.avgLarvaeWeight ?? 0;
-                      return (
-                        <tr key={i.instar} className="border-b border-border/50 hover:bg-muted/30">
-                          <td className="py-2 px-3 font-medium text-foreground">Instar {i.instar}</td>
-                          <td className="py-2 px-3 text-right text-foreground">{i.durationDays}</td>
-                          <td className="py-2 px-3 text-right text-foreground">{(i.totalLeafWeightFedG / 1000).toFixed(1)}</td>
-                          <td className="py-2 px-3 text-right text-foreground">
-                            {feedPerDFL.toFixed(2)}
-                            {i.feedPerDFLTarget && (
-                              <span className="text-[10px] text-muted-foreground ml-1">
-                                (target: {i.feedPerDFLTarget})
-                              </span>
-                            )}
-                          </td>
-                          <td className="py-2 px-3 text-right text-foreground">{(i.mortalityRatePercent * 100).toFixed(1)}%</td>
-                          <td className="py-2 px-3 text-right text-foreground">{(i.cumulativeMortalityRatePercent * 100).toFixed(1)}%</td>
-                          <td className="py-2 px-3 text-right text-foreground">
-                            <div className="flex items-center justify-end gap-1.5">
-                              {avgWeight > 0 ? `${avgWeight.toFixed(2)}` : '—'}
-                              {avgWeight > 0 && (
-                                <span className={`h-2 w-2 rounded-full ${avgWeight >= 5 ? 'bg-success' : avgWeight >= 3 ? 'bg-warning' : 'bg-destructive'}`} />
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Instar Charts */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div className="glass-card rounded-xl p-5">
                   <h3 className="text-sm font-semibold text-foreground mb-1 font-display">Feed per Instar</h3>
@@ -342,17 +275,6 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
             </div>
           )}
 
-          {/* Daily Log Table */}
-          <div>
-            <h2 className="text-sm font-semibold text-foreground font-display mb-3">
-              Daily Log Entries
-              {dailyLogs.length > 0 && (
-                <span className="text-xs font-normal text-muted-foreground ml-2">({dailyLogs.length} entries)</span>
-              )}
-            </h2>
-            <DailyLogTable cycle={selectedCycle} logs={dailyLogs} />
-          </div>
-
           {/* Raw Data Summary */}
           <div className="glass-card rounded-xl p-5">
             <h3 className="text-sm font-semibold text-foreground font-display mb-4">Cycle {selectedCycle.cycleNumber} — Raw Data</h3>
@@ -375,15 +297,6 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
             </div>
           </div>
         </motion.div>
-      )}
-
-      {/* Daily Log Form Dialog */}
-      {selectedCycle && (
-        <DailyLogForm
-          cycle={selectedCycle}
-          open={logFormOpen}
-          onOpenChange={setLogFormOpen}
-        />
       )}
     </div>
   );
