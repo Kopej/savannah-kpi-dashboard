@@ -222,7 +222,7 @@ export function FinishedCyclesDashboard({ cycles, assumptions }: Props) {
       <KPICharts cyclesWithKPIs={cyclesWithKPIs} />
 
       {/* Data Table */}
-      <CycleDataTable cyclesWithKPIs={cyclesWithKPIs} />
+      <FinishedCycleTable cyclesWithKPIs={cyclesWithKPIs} />
     </div>
   );
 }
