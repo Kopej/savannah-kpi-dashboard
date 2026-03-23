@@ -67,7 +67,6 @@ function cycleToDbRow(c: CycleData) {
     cycle_duration_days: c.cycleDurationDays ?? null,
     wet_cocoon_target: c.wetCocoonTarget ?? null,
     current_day_of_cycle: c.currentDayOfCycle ?? null,
-    defective_cocoon_weight_kg: c.defectiveCocoonWeightKg ?? 0,
   };
 }
 
