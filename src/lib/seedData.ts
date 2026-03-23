@@ -12,7 +12,7 @@ export const SEED_CYCLES: CycleData[] = [
     finalLarvaeWeight: 3.3, totalLeafWeightFed: 486490,
     totalHarvestedWetCocoonWeight: 20, percentNonDefective: 0.79,
     avgWeightPerWetCocoon: 1.2, avgShellRatio: 0.17,
-    totalEggs: 27090, hatchRatePercent: 0.71,
+    totalEggs: 27090, hatchRatePercent: 0.71, cycleDurationDays: 28,
   },
   {
     id: uid(), cycleNumber: 9, hatchDate: '2025-09-13', status: 'finished',
@@ -21,7 +21,7 @@ export const SEED_CYCLES: CycleData[] = [
     finalLarvaeWeight: 3.6, totalLeafWeightFed: 251520,
     totalHarvestedWetCocoonWeight: 10.5, percentNonDefective: 0.97,
     avgWeightPerWetCocoon: 1.2, avgShellRatio: 0.21,
-    totalEggs: 24827, hatchRatePercent: 0.55,
+    totalEggs: 24827, hatchRatePercent: 0.55, cycleDurationDays: 26,
   },
   {
     id: uid(), cycleNumber: 10, hatchDate: '2025-09-30', status: 'finished',
@@ -30,7 +30,7 @@ export const SEED_CYCLES: CycleData[] = [
     finalLarvaeWeight: 3.8, totalLeafWeightFed: 521625,
     totalHarvestedWetCocoonWeight: 25.05, percentNonDefective: 1.0,
     avgWeightPerWetCocoon: 1.2, avgShellRatio: 0.24,
-    totalEggs: 22350, hatchRatePercent: 0.95,
+    totalEggs: 22350, hatchRatePercent: 0.95, cycleDurationDays: 27,
   },
   {
     id: uid(), cycleNumber: 11, hatchDate: '2025-09-29', status: 'finished',
@@ -39,7 +39,7 @@ export const SEED_CYCLES: CycleData[] = [
     finalLarvaeWeight: 3.7, totalLeafWeightFed: 156555,
     totalHarvestedWetCocoonWeight: 6.988, percentNonDefective: 0.87,
     avgWeightPerWetCocoon: 1.6, avgShellRatio: 0.22,
-    totalEggs: 14003, hatchRatePercent: 0.74,
+    totalEggs: 14003, hatchRatePercent: 0.74, cycleDurationDays: 25,
   },
   {
     id: uid(), cycleNumber: 12, hatchDate: '2025-10-28', status: 'finished',
@@ -48,7 +48,7 @@ export const SEED_CYCLES: CycleData[] = [
     finalLarvaeWeight: 3.0, totalLeafWeightFed: 296850,
     totalHarvestedWetCocoonWeight: 4.21, percentNonDefective: 0.86,
     avgWeightPerWetCocoon: 1.49, avgShellRatio: 0.23,
-    totalEggs: 19100, hatchRatePercent: 0.74,
+    totalEggs: 19100, hatchRatePercent: 0.74, cycleDurationDays: 26,
   },
   {
     id: uid(), cycleNumber: 13, hatchDate: '2025-11-11', status: 'finished',
@@ -56,7 +56,7 @@ export const SEED_CYCLES: CycleData[] = [
     mortalityPreCocooning: 0.05, mortalityCocooning: 0.05,
     finalLarvaeWeight: 3.15, totalLeafWeightFed: 78660,
     totalHarvestedWetCocoonWeight: 0.36, percentNonDefective: 0.83,
-    avgWeightPerWetCocoon: 1.2, avgShellRatio: 0.12,
+    avgWeightPerWetCocoon: 1.2, avgShellRatio: 0.12, cycleDurationDays: 24,
   },
   {
     id: uid(), cycleNumber: 14, hatchDate: '2025-11-13', status: 'finished',
@@ -65,7 +65,7 @@ export const SEED_CYCLES: CycleData[] = [
     finalLarvaeWeight: 3.03, totalLeafWeightFed: 994930,
     totalHarvestedWetCocoonWeight: 27.36, percentNonDefective: 0.91,
     avgWeightPerWetCocoon: 1.69, avgShellRatio: 0.21,
-    totalEggs: 28000, hatchRatePercent: 0.95,
+    totalEggs: 28000, hatchRatePercent: 0.95, cycleDurationDays: 30,
     // Cycle 14 special: dried + reeled data
     driedCocoonWeightKg: 27,
     reeledSilkWeightKg: 7,
@@ -77,7 +77,7 @@ export const SEED_CYCLES: CycleData[] = [
     finalLarvaeWeight: 0, totalLeafWeightFed: 0,
     totalHarvestedWetCocoonWeight: 0, percentNonDefective: 0,
     avgWeightPerWetCocoon: 0, avgShellRatio: 0,
-    totalEggs: 28000, hatchRatePercent: 0.95,
+    totalEggs: 28000, hatchRatePercent: 0.95, cycleDurationDays: 27,
   },
   {
     id: uid(), cycleNumber: 16, hatchDate: '2026-02-02', status: 'finished',
@@ -85,7 +85,7 @@ export const SEED_CYCLES: CycleData[] = [
     mortalityPreCocooning: 0, mortalityCocooning: 0,
     finalLarvaeWeight: 0, totalLeafWeightFed: 0,
     totalHarvestedWetCocoonWeight: 0, percentNonDefective: 0,
-    avgWeightPerWetCocoon: 0, avgShellRatio: 0,
+    avgWeightPerWetCocoon: 0, avgShellRatio: 0, cycleDurationDays: 25,
   },
   // Ongoing cycles with instar data from Excel
   {

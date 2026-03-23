@@ -6,7 +6,7 @@ import { KPICharts } from '@/components/KPICharts';
 import { FinishedCycleTable } from '@/components/FinishedCycleTable';
 import { ConversionFunnel } from '@/components/ConversionFunnel';
 import { getTrafficLight } from '@/lib/kpiThresholds';
-import { Activity, Bug, Factory, Scale, TrendingUp, Weight, Layers, Leaf, ArrowRightLeft, Sparkles } from 'lucide-react';
+import { Activity, Bug, Calendar, Factory, Scale, TrendingUp, Weight, Layers, Leaf, ArrowRightLeft, Sparkles } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -108,6 +108,15 @@ export function FinishedCyclesDashboard({ cycles, assumptions }: Props) {
   const dflsBrushed = displayKPIs?.dflsBrushed || 0;
   const survivalRate = displayKPIs ? 1 - displayKPIs.totalMortality : 0;
   const fcr = displayKPIs?.overallFeedConversion || 0;
+  const cycleDays = useMemo(() => {
+    if (singleCycle) return singleCycle.cycleDurationDays || 0;
+    if (isMultiSelect && activeCycles.length > 0) {
+      const total = activeCycles.reduce((s, c) => s + (c.cycleDurationDays || 0), 0);
+      const count = activeCycles.filter(c => c.cycleDurationDays && c.cycleDurationDays > 0).length;
+      return count > 0 ? Math.round(total / count) : 0;
+    }
+    return 0;
+  }, [singleCycle, isMultiSelect, activeCycles]);
 
   const cycleLabel = isMultiSelect
     ? `Average of ${activeCycles.length} Cycles (C${activeCycles[0]?.cycleNumber}–C${activeCycles[activeCycles.length - 1]?.cycleNumber})`
@@ -172,17 +181,18 @@ export function FinishedCyclesDashboard({ cycles, assumptions }: Props) {
             <Sparkles className="h-4 w-4 text-primary" />
             {cycleLabel}
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <KPICard title="Number of DFLs" value={formatNumber(dflsBrushed)} subtitle={`${assumptions.wormsPerDFL} worms/DFL`} icon={Layers} delay={0} />
-            <KPICard title="Total Worm Count" value={formatNumber(totalWormCount)} subtitle="Eggs × Hatch Rate" icon={Bug} delay={0.03} />
-            <KPICard title="Total Feed Used" value={`${formatNumber(totalFeedKg, 1)} kg`} subtitle="Leaf + Shoot" icon={Leaf} delay={0.06} />
+            <KPICard title="Cycle Duration" value={cycleDays > 0 ? `${cycleDays} days` : '—'} subtitle={isMultiSelect ? 'avg across cycles' : 'hatch to harvest'} icon={Calendar} delay={0.03} />
+            <KPICard title="Total Worm Count" value={formatNumber(totalWormCount)} subtitle="Eggs × Hatch Rate" icon={Bug} delay={0.06} />
+            <KPICard title="Total Feed Used" value={`${formatNumber(totalFeedKg, 1)} kg`} subtitle="Leaf + Shoot" icon={Leaf} delay={0.09} />
             <KPICard
               title="Feed Conversion Ratio"
               value={fcr > 0 && isFinite(fcr) ? `${fcr.toFixed(1)}` : '—'}
               subtitle="kg feed / kg wet cocoon"
               icon={ArrowRightLeft}
               trafficLight={fcr > 0 && isFinite(fcr) ? getTrafficLight(fcr, 'fcr') : undefined}
-              delay={0.09}
+              delay={0.12}
             />
           </div>
         </div>

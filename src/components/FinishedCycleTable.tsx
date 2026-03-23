@@ -52,6 +52,7 @@ export function FinishedCycleTable({ cyclesWithKPIs }: Props) {
           <TableHeader>
             <TableRow>
               <SortHeader label="Cycle" field="cycleNumber" />
+              <SortHeader label="Days" field="cycleDurationDays" />
               <SortHeader label="DFLs" field="dflsBrushed" />
               <SortHeader label="Hatch %" field="hatchRate" />
               <SortHeader label="Survival %" field="totalMortality" />
@@ -65,6 +66,7 @@ export function FinishedCycleTable({ cyclesWithKPIs }: Props) {
             {filtered.map(c => (
               <TableRow key={c.id}>
                 <TableCell className="font-medium">Cycle {c.cycleNumber}</TableCell>
+                <TableCell className="text-right">{c.cycleDurationDays && c.cycleDurationDays > 0 ? c.cycleDurationDays : '—'}</TableCell>
                 <TableCell className="text-right">{formatNumber(c.kpis.dflsBrushed)}</TableCell>
                 <TableCell className="text-right">{formatPercent(c.kpis.hatchRate)}</TableCell>
                 <TableCell className="text-right">{formatPercent(1 - c.kpis.totalMortality)}</TableCell>
