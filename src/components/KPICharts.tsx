@@ -62,7 +62,6 @@ export function KPICharts({ cyclesWithKPIs }: Props) {
             <Bar yAxisId="left" dataKey="yield" fill="hsl(174, 62%, 32%)" radius={[4, 4, 0, 0]} name="Wet Cocoon (kg)" />
             <Line yAxisId="right" type="monotone" dataKey="dfls" stroke="hsl(199, 89%, 48%)" strokeWidth={2} dot={{ r: 4 }} name="Total DFLs" />
           </ComposedChart>
-          </BarChart>
         </ResponsiveContainer>
       </div>
 
