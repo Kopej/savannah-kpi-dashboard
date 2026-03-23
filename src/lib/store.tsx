@@ -148,7 +148,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         // If DB is empty, seed it
         if (!cycleRows || cycleRows.length === 0) {
           console.log('[Store] No cycles in DB, seeding...');
-          const seedRows = SEED_CYCLES.map(cycleToDbRow);
+          // Omit id so DB generates proper UUIDs
+          const seedRows = SEED_CYCLES.map(c => {
+            const { id, ...row } = cycleToDbRow(c);
+            return row;
+          });
           const { data: inserted, error: seedErr } = await supabase
             .from('cycles')
             .insert(seedRows)
@@ -185,8 +189,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // ── Cycle operations ──
 
   const addCycle = useCallback(async (cycle: CycleData) => {
-    setCycles(prev => [...prev, cycle]);
-    const { error } = await supabase.from('cycles').insert(cycleToDbRow(cycle));
+    // Generate proper UUID for new cycles
+    const dbRow = cycleToDbRow(cycle);
+    dbRow.id = crypto.randomUUID();
+    const newCycle = { ...cycle, id: dbRow.id };
+    setCycles(prev => [...prev, newCycle]);
+    const { error } = await supabase.from('cycles').insert(dbRow);
     if (error) console.error('[Store] addCycle error:', error);
   }, []);
 
@@ -232,9 +240,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // ── Ticket operations ──
 
   const addTicket = useCallback(async (ticket: Ticket) => {
-    setTickets(prev => [...prev, ticket]);
+    const newId = crypto.randomUUID();
+    const newTicket = { ...ticket, id: newId };
+    setTickets(prev => [...prev, newTicket]);
     const { error } = await supabase.from('tickets').insert({
-      id: ticket.id,
       ticket_id: ticket.ticketId,
       name: ticket.name,
       email: ticket.email,
@@ -261,9 +270,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // ── Daily Log operations ──
 
   const addDailyLog = useCallback(async (log: DailyLog) => {
-    setDailyLogs(prev => [...prev, log]);
+    const newId = crypto.randomUUID();
+    const newLog = { ...log, id: newId };
+    setDailyLogs(prev => [...prev, newLog]);
     const { error } = await supabase.from('daily_logs').insert({
-      id: log.id,
       cycle_id: log.cycleId,
       cycle_number: log.cycleNumber,
       date: log.date,
