@@ -52,6 +52,7 @@ export function FinishedCycleTable({ cyclesWithKPIs }: Props) {
           <TableHeader>
             <TableRow>
               <SortHeader label="Cycle" field="cycleNumber" />
+              <SortHeader label="Days" field="cycleDurationDays" />
               <SortHeader label="DFLs" field="dflsBrushed" />
               <SortHeader label="Hatch %" field="hatchRate" />
               <SortHeader label="Survival %" field="totalMortality" />
