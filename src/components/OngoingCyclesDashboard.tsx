@@ -64,7 +64,6 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
     const feedPerDFL = dflsBrushed > 0 ? (i.totalLeafWeightFedG / 1000) / dflsBrushed : 0;
     return {
       instar: `Instar ${i.instar}`,
-      feedKg: Math.round(i.totalLeafWeightFedG / 100) / 10,
       feedPerDFL: Math.round(feedPerDFL * 100) / 100,
       days: i.durationDays,
     };
