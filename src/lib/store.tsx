@@ -240,9 +240,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // ── Ticket operations ──
 
   const addTicket = useCallback(async (ticket: Ticket) => {
-    setTickets(prev => [...prev, ticket]);
+    const newId = crypto.randomUUID();
+    const newTicket = { ...ticket, id: newId };
+    setTickets(prev => [...prev, newTicket]);
     const { error } = await supabase.from('tickets').insert({
-      id: ticket.id,
       ticket_id: ticket.ticketId,
       name: ticket.name,
       email: ticket.email,
