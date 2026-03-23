@@ -64,7 +64,6 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
     const feedPerDFL = dflsBrushed > 0 ? (i.totalLeafWeightFedG / 1000) / dflsBrushed : 0;
     return {
       instar: `Instar ${i.instar}`,
-      feedKg: Math.round(i.totalLeafWeightFedG / 100) / 10,
       feedPerDFL: Math.round(feedPerDFL * 100) / 100,
       days: i.durationDays,
     };
@@ -254,8 +253,8 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
               </h2>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div className="glass-card rounded-xl p-5">
-                  <h3 className="text-sm font-semibold text-foreground mb-1 font-display">Feed per Instar</h3>
-                  <p className="text-[10px] text-muted-foreground mb-4">Feed consumption (kg) and Feed/DFL by instar</p>
+                  <h3 className="text-sm font-semibold text-foreground mb-1 font-display">Feed/DFL per Instar</h3>
+                  <p className="text-[10px] text-muted-foreground mb-4">Feed per DFL (kg) by instar</p>
                   <ResponsiveContainer width="100%" height={240}>
                     <BarChart data={instarFeedData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(170 15% 88%)" />
@@ -263,7 +262,6 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
                       <YAxis tick={{ fontSize: 11 }} />
                       <Tooltip {...tooltipStyle} />
                       <Legend wrapperStyle={{ fontSize: 11 }} />
-                      <Bar dataKey="feedKg" fill="hsl(174, 62%, 32%)" radius={[4, 4, 0, 0]} name="Feed (kg)" />
                       <Bar dataKey="feedPerDFL" fill="hsl(199, 89%, 48%)" radius={[4, 4, 0, 0]} name="Feed/DFL (kg)" />
                     </BarChart>
                   </ResponsiveContainer>
