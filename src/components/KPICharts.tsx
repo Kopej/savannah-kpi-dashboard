@@ -11,6 +11,7 @@ export function KPICharts({ cyclesWithKPIs }: Props) {
     cyclesWithKPIs.map(c => ({
       cycle: `C${c.cycleNumber}`,
       yield: c.totalHarvestedWetCocoonWeight,
+      dfls: c.kpis.dflsBrushed,
       survival: Math.round((1 - c.kpis.totalMortality) * 100),
       hatchRate: Math.round(c.kpis.hatchRate * 100),
       cocoonWeight: c.avgWeightPerWetCocoon,
