@@ -222,7 +222,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (updates.cycleDurationDays !== undefined) dbUpdates.cycle_duration_days = updates.cycleDurationDays;
     if (updates.wetCocoonTarget !== undefined) dbUpdates.wet_cocoon_target = updates.wetCocoonTarget;
     if (updates.currentDayOfCycle !== undefined) dbUpdates.current_day_of_cycle = updates.currentDayOfCycle;
-    if (updates.defectiveCocoonWeightKg !== undefined) dbUpdates.defective_cocoon_weight_kg = updates.defectiveCocoonWeightKg;
 
     if (Object.keys(dbUpdates).length > 0) {
       const { error } = await supabase.from('cycles').update(dbUpdates).eq('id', id);
