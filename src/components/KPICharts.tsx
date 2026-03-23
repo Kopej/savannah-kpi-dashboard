@@ -66,18 +66,16 @@ export function KPICharts({ cyclesWithKPIs }: Props) {
       </div>
 
       <div className="glass-card rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-foreground mb-1 font-display">Survival & Hatch Rate (%)</h3>
-        <p className="text-[10px] text-muted-foreground mb-4">Avg Survival: {avgSurvival}% · Avg Hatch: {avgHatchRate}%</p>
+        <h3 className="text-sm font-semibold text-foreground mb-1 font-display">Feed Conversion (kg leaf / kg cocoon)</h3>
+        <p className="text-[10px] text-muted-foreground mb-4">Average: {avgFeed} kg leaf per kg wet cocoon</p>
         <ResponsiveContainer width="100%" height={260}>
-          <LineChart data={chartData}>
+          <BarChart data={validFeed}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(170 15% 88%)" />
             <XAxis dataKey="cycle" tick={{ fontSize: 11 }} />
-            <YAxis tick={{ fontSize: 11 }} domain={[0, 100]} />
+            <YAxis tick={{ fontSize: 11 }} />
             <Tooltip {...tooltipStyle} />
-            <Legend wrapperStyle={{ fontSize: 11 }} />
-            <Line type="monotone" dataKey="survival" stroke="hsl(152, 45%, 45%)" strokeWidth={2} dot={{ r: 4 }} name="Survival %" />
-            <Line type="monotone" dataKey="hatchRate" stroke="hsl(199, 89%, 48%)" strokeWidth={2} dot={{ r: 4 }} name="Hatch Rate %" />
-          </LineChart>
+            <Bar dataKey="feedPerCocoon" fill="hsl(152, 45%, 45%)" radius={[4, 4, 0, 0]} name="kg Leaf / kg Cocoon" />
+          </BarChart>
         </ResponsiveContainer>
       </div>
 
@@ -98,16 +96,18 @@ export function KPICharts({ cyclesWithKPIs }: Props) {
       </div>
 
       <div className="glass-card rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-foreground mb-1 font-display">Feed Conversion (kg leaf / kg cocoon)</h3>
-        <p className="text-[10px] text-muted-foreground mb-4">Average: {avgFeed} kg leaf per kg wet cocoon</p>
+        <h3 className="text-sm font-semibold text-foreground mb-1 font-display">Survival & Hatch Rate (%)</h3>
+        <p className="text-[10px] text-muted-foreground mb-4">Avg Survival: {avgSurvival}% · Avg Hatch: {avgHatchRate}%</p>
         <ResponsiveContainer width="100%" height={260}>
-          <BarChart data={validFeed}>
+          <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(170 15% 88%)" />
             <XAxis dataKey="cycle" tick={{ fontSize: 11 }} />
-            <YAxis tick={{ fontSize: 11 }} />
+            <YAxis tick={{ fontSize: 11 }} domain={[0, 100]} />
             <Tooltip {...tooltipStyle} />
-            <Bar dataKey="feedPerCocoon" fill="hsl(152, 45%, 45%)" radius={[4, 4, 0, 0]} name="kg Leaf / kg Cocoon" />
-          </BarChart>
+            <Legend wrapperStyle={{ fontSize: 11 }} />
+            <Line type="monotone" dataKey="survival" stroke="hsl(152, 45%, 45%)" strokeWidth={2} dot={{ r: 4 }} name="Survival %" />
+            <Line type="monotone" dataKey="hatchRate" stroke="hsl(199, 89%, 48%)" strokeWidth={2} dot={{ r: 4 }} name="Hatch Rate %" />
+          </LineChart>
         </ResponsiveContainer>
       </div>
     </div>
