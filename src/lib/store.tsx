@@ -1,7 +1,31 @@
-import React, { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import type { CycleData, Ticket, Assumptions, DailyLog } from './types';
 import { SEED_CYCLES } from './seedData';
 import { DEFAULT_ASSUMPTIONS } from './calculations';
+
+const STORAGE_KEY = 'seritech_app_state';
+
+function loadFromStorage<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return parsed as T;
+    }
+  } catch (e) {
+    console.warn('Failed to load from localStorage:', e);
+  }
+  return fallback;
+}
+
+function saveToStorage(key: string, data: unknown): void {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+    console.log(`[Persist] Saved to ${key}`);
+  } catch (e) {
+    console.warn('Failed to save to localStorage:', e);
+  }
+}
 
 interface AppState {
   cycles: CycleData[];
@@ -44,10 +68,21 @@ function applyCumulativeLogs(cycle: CycleData, logs: DailyLog[]): CycleData {
 const AppContext = createContext<AppState | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [cycles, setCycles] = useState<CycleData[]>(SEED_CYCLES);
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [dailyLogs, setDailyLogs] = useState<DailyLog[]>([]);
+  const [cycles, setCycles] = useState<CycleData[]>(() =>
+    loadFromStorage<CycleData[]>(`${STORAGE_KEY}_cycles`, SEED_CYCLES)
+  );
+  const [tickets, setTickets] = useState<Ticket[]>(() =>
+    loadFromStorage<Ticket[]>(`${STORAGE_KEY}_tickets`, [])
+  );
+  const [dailyLogs, setDailyLogs] = useState<DailyLog[]>(() =>
+    loadFromStorage<DailyLog[]>(`${STORAGE_KEY}_dailyLogs`, [])
+  );
   const [assumptions] = useState<Assumptions>(DEFAULT_ASSUMPTIONS);
+
+  // Persist state changes to localStorage
+  useEffect(() => { saveToStorage(`${STORAGE_KEY}_cycles`, cycles); }, [cycles]);
+  useEffect(() => { saveToStorage(`${STORAGE_KEY}_tickets`, tickets); }, [tickets]);
+  useEffect(() => { saveToStorage(`${STORAGE_KEY}_dailyLogs`, dailyLogs); }, [dailyLogs]);
 
   const addCycle = useCallback((cycle: CycleData) => {
     setCycles(prev => [...prev, cycle]);
