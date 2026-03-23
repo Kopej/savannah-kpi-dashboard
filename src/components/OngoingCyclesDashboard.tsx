@@ -118,30 +118,54 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
         </span>
 
         {/* Mark as Finished */}
-        {selectedCycle && (
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="outline" size="sm" className="ml-auto gap-1.5">
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                Mark as Last Completed Cycle
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Complete Cycle {selectedCycle.cycleNumber}?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will move Cycle {selectedCycle.cycleNumber} from Ongoing to Finished Cycles. This action cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={() => markCycleFinished(selectedCycle.id)}>
-                  Confirm
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        )}
+        {selectedCycle && (() => {
+          const missingFields: string[] = [];
+          if (!selectedCycle.finalLarvaeWeight) missingFields.push('Final Larvae Weight');
+          if (!selectedCycle.totalHarvestedWetCocoonWeight) missingFields.push('Wet Weight – All Cocoons');
+          if (!selectedCycle.avgWeightPerWetCocoon) missingFields.push('Avg Weight per Wet Cocoon');
+          if (!selectedCycle.avgShellRatio) missingFields.push('Avg Shell Ratio');
+          const canComplete = missingFields.length === 0;
+
+          return (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm" className="ml-auto gap-1.5">
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  Mark as Last Completed Cycle
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    {canComplete ? `Complete Cycle ${selectedCycle.cycleNumber}?` : 'Cannot Complete Cycle'}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription asChild>
+                    {canComplete ? (
+                      <p>This will move Cycle {selectedCycle.cycleNumber} from Ongoing to Finished Cycles. This action cannot be undone.</p>
+                    ) : (
+                      <div className="space-y-2">
+                        <p className="text-destructive font-medium">
+                          Please complete all End of Cycle Summary fields before marking the cycle as complete.
+                        </p>
+                        <ul className="list-disc pl-5 text-sm text-muted-foreground">
+                          {missingFields.map(f => <li key={f}>{f}</li>)}
+                        </ul>
+                      </div>
+                    )}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{canComplete ? 'Cancel' : 'Close'}</AlertDialogCancel>
+                  {canComplete && (
+                    <AlertDialogAction onClick={() => markCycleFinished(selectedCycle.id)}>
+                      Confirm
+                    </AlertDialogAction>
+                  )}
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          );
+        })()}
       </div>
 
       {selectedCycle && kpis && (
