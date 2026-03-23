@@ -234,7 +234,7 @@ export function FinishedCyclesDashboard({ cycles, assumptions }: Props) {
       )}
 
       {/* Trend Charts */}
-      <KPICharts cyclesWithKPIs={cyclesWithKPIs} />
+      <KPICharts cyclesWithKPIs={activeCyclesWithKPIs} />
 
       {/* Data Table */}
       <FinishedCycleTable cyclesWithKPIs={cyclesWithKPIs} />
