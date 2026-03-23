@@ -214,7 +214,7 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
             <h2 className="text-sm font-semibold text-foreground font-display mb-3">
               Real-Time Metrics
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <KPICard
                 title="Feed Consumption"
                 value={`${formatNumber(leafFedKg, 1)} kg`}
@@ -229,22 +229,6 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
                 icon={Weight}
                 trafficLight={selectedCycle.finalLarvaeWeight > 0 ? getTrafficLight(selectedCycle.finalLarvaeWeight, 'wormWeight') : undefined}
                 delay={0.15}
-              />
-              <KPICard
-                title="Wet Cocoons"
-                value={selectedCycle.totalHarvestedWetCocoonWeight > 0 ? formatNumber(selectedCycle.totalHarvestedWetCocoonWeight, 1) + ' kg' : '—'}
-                target={selectedCycle.wetCocoonTarget ? `Target: ${selectedCycle.wetCocoonTarget} kg` : undefined}
-                icon={Egg}
-                trafficLight={selectedCycle.wetCocoonTarget && selectedCycle.totalHarvestedWetCocoonWeight > 0 ? getTrafficLight(selectedCycle.totalHarvestedWetCocoonWeight / selectedCycle.wetCocoonTarget, 'survivalRate') : undefined}
-                delay={0.18}
-              />
-              <KPICard
-                title="Shell Ratio"
-                value={selectedCycle.avgShellRatio > 0 ? formatPercent(selectedCycle.avgShellRatio) : '—'}
-                target="≥ 21%"
-                icon={Scale}
-                trafficLight={selectedCycle.avgShellRatio > 0 ? getTrafficLight(selectedCycle.avgShellRatio, 'shellRatio') : undefined}
-                delay={0.21}
               />
             </div>
           </div>
