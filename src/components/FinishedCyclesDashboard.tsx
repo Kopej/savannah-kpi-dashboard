@@ -108,6 +108,15 @@ export function FinishedCyclesDashboard({ cycles, assumptions }: Props) {
   const dflsBrushed = displayKPIs?.dflsBrushed || 0;
   const survivalRate = displayKPIs ? 1 - displayKPIs.totalMortality : 0;
   const fcr = displayKPIs?.overallFeedConversion || 0;
+  const cycleDays = useMemo(() => {
+    if (singleCycle) return singleCycle.cycleDurationDays || 0;
+    if (isMultiSelect && activeCycles.length > 0) {
+      const total = activeCycles.reduce((s, c) => s + (c.cycleDurationDays || 0), 0);
+      const count = activeCycles.filter(c => c.cycleDurationDays && c.cycleDurationDays > 0).length;
+      return count > 0 ? Math.round(total / count) : 0;
+    }
+    return 0;
+  }, [singleCycle, isMultiSelect, activeCycles]);
 
   const cycleLabel = isMultiSelect
     ? `Average of ${activeCycles.length} Cycles (C${activeCycles[0]?.cycleNumber}–C${activeCycles[activeCycles.length - 1]?.cycleNumber})`
