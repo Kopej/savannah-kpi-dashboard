@@ -14,7 +14,197 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      cycles: {
+        Row: {
+          avg_shell_ratio: number
+          avg_weight_per_wet_cocoon: number
+          created_at: string
+          current_day_of_cycle: number | null
+          cycle_duration_days: number | null
+          cycle_number: number
+          defective_cocoon_weight_kg: number | null
+          dried_cocoon_weight_kg: number | null
+          estimated_starting_egg_count: number
+          final_larvae_weight: number
+          hatch_date: string
+          hatch_rate_percent: number | null
+          hatched_eggs: number
+          id: string
+          instars: Json | null
+          mortality_cocooning: number
+          mortality_pre_cocooning: number
+          percent_non_defective: number
+          reeled_silk_weight_kg: number | null
+          status: string
+          total_eggs: number | null
+          total_harvested_wet_cocoon_weight: number
+          total_leaf_weight_fed: number
+          updated_at: string
+          wet_cocoon_target: number | null
+        }
+        Insert: {
+          avg_shell_ratio?: number
+          avg_weight_per_wet_cocoon?: number
+          created_at?: string
+          current_day_of_cycle?: number | null
+          cycle_duration_days?: number | null
+          cycle_number: number
+          defective_cocoon_weight_kg?: number | null
+          dried_cocoon_weight_kg?: number | null
+          estimated_starting_egg_count?: number
+          final_larvae_weight?: number
+          hatch_date: string
+          hatch_rate_percent?: number | null
+          hatched_eggs?: number
+          id?: string
+          instars?: Json | null
+          mortality_cocooning?: number
+          mortality_pre_cocooning?: number
+          percent_non_defective?: number
+          reeled_silk_weight_kg?: number | null
+          status?: string
+          total_eggs?: number | null
+          total_harvested_wet_cocoon_weight?: number
+          total_leaf_weight_fed?: number
+          updated_at?: string
+          wet_cocoon_target?: number | null
+        }
+        Update: {
+          avg_shell_ratio?: number
+          avg_weight_per_wet_cocoon?: number
+          created_at?: string
+          current_day_of_cycle?: number | null
+          cycle_duration_days?: number | null
+          cycle_number?: number
+          defective_cocoon_weight_kg?: number | null
+          dried_cocoon_weight_kg?: number | null
+          estimated_starting_egg_count?: number
+          final_larvae_weight?: number
+          hatch_date?: string
+          hatch_rate_percent?: number | null
+          hatched_eggs?: number
+          id?: string
+          instars?: Json | null
+          mortality_cocooning?: number
+          mortality_pre_cocooning?: number
+          percent_non_defective?: number
+          reeled_silk_weight_kg?: number | null
+          status?: string
+          total_eggs?: number | null
+          total_harvested_wet_cocoon_weight?: number
+          total_leaf_weight_fed?: number
+          updated_at?: string
+          wet_cocoon_target?: number | null
+        }
+        Relationships: []
+      }
+      daily_logs: {
+        Row: {
+          avg_shell_ratio: number
+          avg_weight_per_wet_cocoon: number
+          created_at: string
+          cycle_id: string
+          cycle_number: number
+          date: string
+          estimated_starting_egg_count: number
+          final_larvae_weight: number
+          hatched_eggs: number
+          id: string
+          mortality_cocooning: number
+          mortality_pre_cocooning: number
+          percent_non_defective: number
+          total_harvested_wet_cocoon_weight: number
+          total_leaf_weight_fed: number
+          updated_at: string
+        }
+        Insert: {
+          avg_shell_ratio?: number
+          avg_weight_per_wet_cocoon?: number
+          created_at?: string
+          cycle_id: string
+          cycle_number: number
+          date: string
+          estimated_starting_egg_count?: number
+          final_larvae_weight?: number
+          hatched_eggs?: number
+          id?: string
+          mortality_cocooning?: number
+          mortality_pre_cocooning?: number
+          percent_non_defective?: number
+          total_harvested_wet_cocoon_weight?: number
+          total_leaf_weight_fed?: number
+          updated_at?: string
+        }
+        Update: {
+          avg_shell_ratio?: number
+          avg_weight_per_wet_cocoon?: number
+          created_at?: string
+          cycle_id?: string
+          cycle_number?: number
+          date?: string
+          estimated_starting_egg_count?: number
+          final_larvae_weight?: number
+          hatched_eggs?: number
+          id?: string
+          mortality_cocooning?: number
+          mortality_pre_cocooning?: number
+          percent_non_defective?: number
+          total_harvested_wet_cocoon_weight?: number
+          total_leaf_weight_fed?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_logs_cycle_id_fkey"
+            columns: ["cycle_id"]
+            isOneToOne: false
+            referencedRelation: "cycles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tickets: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          email: string
+          id: string
+          name: string
+          notes: string
+          screenshot_url: string | null
+          status: string
+          ticket_id: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description: string
+          email: string
+          id?: string
+          name: string
+          notes?: string
+          screenshot_url?: string | null
+          status?: string
+          ticket_id: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          email?: string
+          id?: string
+          name?: string
+          notes?: string
+          screenshot_url?: string | null
+          status?: string
+          ticket_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
