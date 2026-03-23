@@ -68,10 +68,21 @@ function applyCumulativeLogs(cycle: CycleData, logs: DailyLog[]): CycleData {
 const AppContext = createContext<AppState | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [cycles, setCycles] = useState<CycleData[]>(SEED_CYCLES);
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [dailyLogs, setDailyLogs] = useState<DailyLog[]>([]);
+  const [cycles, setCycles] = useState<CycleData[]>(() =>
+    loadFromStorage<CycleData[]>(`${STORAGE_KEY}_cycles`, SEED_CYCLES)
+  );
+  const [tickets, setTickets] = useState<Ticket[]>(() =>
+    loadFromStorage<Ticket[]>(`${STORAGE_KEY}_tickets`, [])
+  );
+  const [dailyLogs, setDailyLogs] = useState<DailyLog[]>(() =>
+    loadFromStorage<DailyLog[]>(`${STORAGE_KEY}_dailyLogs`, [])
+  );
   const [assumptions] = useState<Assumptions>(DEFAULT_ASSUMPTIONS);
+
+  // Persist state changes to localStorage
+  useEffect(() => { saveToStorage(`${STORAGE_KEY}_cycles`, cycles); }, [cycles]);
+  useEffect(() => { saveToStorage(`${STORAGE_KEY}_tickets`, tickets); }, [tickets]);
+  useEffect(() => { saveToStorage(`${STORAGE_KEY}_dailyLogs`, dailyLogs); }, [dailyLogs]);
 
   const addCycle = useCallback((cycle: CycleData) => {
     setCycles(prev => [...prev, cycle]);
