@@ -192,7 +192,7 @@ export function FinishedCyclesDashboard({ cycles, assumptions }: Props) {
               subtitle="kg feed / kg wet cocoon"
               icon={ArrowRightLeft}
               trafficLight={fcr > 0 && isFinite(fcr) ? getTrafficLight(fcr, 'fcr') : undefined}
-              delay={0.09}
+              delay={0.12}
             />
           </div>
         </div>

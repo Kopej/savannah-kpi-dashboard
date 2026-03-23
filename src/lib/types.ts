@@ -33,6 +33,7 @@ export interface CycleData {
   // Dried/reeled data (finished cycles, optional)
   driedCocoonWeightKg?: number;
   reeledSilkWeightKg?: number;
+  cycleDurationDays?: number; // total days for full cycle
   // Per-cycle editable targets
   wetCocoonTarget?: number; // kg target
   currentDayOfCycle?: number; // live tracking

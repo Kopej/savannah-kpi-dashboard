@@ -85,7 +85,7 @@ export const SEED_CYCLES: CycleData[] = [
     mortalityPreCocooning: 0, mortalityCocooning: 0,
     finalLarvaeWeight: 0, totalLeafWeightFed: 0,
     totalHarvestedWetCocoonWeight: 0, percentNonDefective: 0,
-    avgWeightPerWetCocoon: 0, avgShellRatio: 0,
+    avgWeightPerWetCocoon: 0, avgShellRatio: 0, cycleDurationDays: 25,
   },
   // Ongoing cycles with instar data from Excel
   {
