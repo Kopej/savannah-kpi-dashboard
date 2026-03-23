@@ -12,6 +12,7 @@ interface AppState {
   addTicket: (ticket: Ticket) => void;
   updateTicket: (id: string, updates: Partial<Ticket>) => void;
   markCycleFinished: (id: string) => void;
+  updateCycleData: (id: string, updates: Partial<CycleData>) => void;
   addDailyLog: (log: DailyLog) => void;
   updateDailyLog: (id: string, updates: Partial<DailyLog>) => void;
   deleteDailyLog: (id: string) => void;
@@ -64,6 +65,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setCycles(prev => prev.map(c => c.id === id ? { ...c, status: 'finished' as const } : c));
   }, []);
 
+  const updateCycleData = useCallback((id: string, updates: Partial<CycleData>) => {
+    setCycles(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
+  }, []);
+
   const addDailyLog = useCallback((log: DailyLog) => {
     setDailyLogs(prev => [...prev, log]);
     // Update the parent cycle with cumulative data
@@ -108,7 +113,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   return (
     <AppContext.Provider value={{
       cycles, tickets, dailyLogs, assumptions,
-      addCycle, addTicket, updateTicket, markCycleFinished,
+      addCycle, addTicket, updateTicket, markCycleFinished, updateCycleData,
       addDailyLog, updateDailyLog, deleteDailyLog, getDailyLogsForCycle,
     }}>
       {children}
