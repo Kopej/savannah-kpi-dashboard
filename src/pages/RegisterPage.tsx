@@ -2,17 +2,33 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Leaf } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 export default function RegisterPage() {
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'User' });
+  const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [loading, setLoading] = useState(false);
+  const { signUp } = useAuth();
+  const navigate = useNavigate();
   const set = (f: string, v: string) => setForm(p => ({ ...p, [f]: v }));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Auth not activated yet — structure only
+    if (form.password.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+    setLoading(true);
+    const { error } = await signUp(form.email, form.password, form.name);
+    setLoading(false);
+    if (error) {
+      toast.error(error);
+    } else {
+      toast.success('Account created! You are now signed in.');
+      navigate('/');
+    }
   };
 
   return (
@@ -28,35 +44,25 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
             <Label className="text-xs text-muted-foreground">Full Name</Label>
-            <Input value={form.name} onChange={e => set('name', e.target.value)} className="mt-1" placeholder="Your name" />
+            <Input value={form.name} onChange={e => set('name', e.target.value)} className="mt-1" placeholder="Your name" required />
           </div>
           <div>
             <Label className="text-xs text-muted-foreground">Email</Label>
-            <Input type="email" value={form.email} onChange={e => set('email', e.target.value)} className="mt-1" placeholder="you@seritech.com" />
+            <Input type="email" value={form.email} onChange={e => set('email', e.target.value)} className="mt-1" placeholder="you@seritech.com" required />
           </div>
           <div>
             <Label className="text-xs text-muted-foreground">Password</Label>
-            <Input type="password" value={form.password} onChange={e => set('password', e.target.value)} className="mt-1" placeholder="••••••••" />
+            <Input type="password" value={form.password} onChange={e => set('password', e.target.value)} className="mt-1" placeholder="••••••••" required />
           </div>
-          <div>
-            <Label className="text-xs text-muted-foreground">Role</Label>
-            <Select value={form.role} onValueChange={v => set('role', v)}>
-              <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="User">User</SelectItem>
-                <SelectItem value="Admin">Admin</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <Button type="submit" className="w-full kpi-gradient border-0 text-primary-foreground">
-            Register
+          <Button type="submit" disabled={loading} className="w-full kpi-gradient border-0 text-primary-foreground">
+            {loading ? 'Creating account...' : 'Register'}
           </Button>
         </form>
         <p className="text-center text-xs text-muted-foreground mt-4">
           Already have an account? <Link to="/login" className="text-primary font-medium hover:underline">Sign in</Link>
         </p>
         <p className="text-center text-[10px] text-muted-foreground/50 mt-6">
-          Authentication is not yet activated. Access is unrestricted.
+          New users are assigned the "viewer" role by default. Contact an admin to get admin access.
         </p>
       </div>
     </div>

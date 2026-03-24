@@ -1,8 +1,11 @@
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
-import { Leaf, User } from 'lucide-react';
+import { Leaf, User, Shield } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
+  const { user, role } = useAuth();
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
@@ -18,6 +21,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               </span>
             </div>
             <div className="flex items-center gap-2">
+              {user && role && (
+                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium ${
+                  role === 'admin' ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground'
+                }`}>
+                  <Shield className="h-3 w-3" />
+                  {role}
+                </span>
+              )}
               <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
                 <User className="h-4 w-4 text-muted-foreground" />
               </div>

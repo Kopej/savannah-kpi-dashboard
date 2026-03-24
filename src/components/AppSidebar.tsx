@@ -12,22 +12,28 @@ import {
   SidebarFooter,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { BarChart3, MessageSquare, LogIn, UserPlus } from 'lucide-react';
+import { BarChart3, MessageSquare, LogIn, UserPlus, Database, LogOut } from 'lucide-react';
 import { Leaf } from 'lucide-react';
-
-const mainItems = [
-  { title: 'KPI Dashboard', url: '/', icon: BarChart3 },
-  { title: 'Feedback', url: '/feedback', icon: MessageSquare },
-];
-
-const authItems = [
-  { title: 'Login', url: '/login', icon: LogIn },
-  { title: 'Register', url: '/register', icon: UserPlus },
-];
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
+  const { user, isAdmin, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const mainItems = [
+    { title: 'KPI Dashboard', url: '/', icon: BarChart3 },
+    ...(isAdmin ? [{ title: 'Data Input', url: '/data-input', icon: Database }] : []),
+    { title: 'Feedback', url: '/feedback', icon: MessageSquare },
+  ];
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/login');
+  };
 
   return (
     <Sidebar collapsible="icon" className="sidebar-gradient border-r-0">
@@ -77,26 +83,57 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {authItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
+              {!user ? (
+                <>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to="/login"
+                        className="text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
+                        activeClassName="bg-sidebar-accent text-sidebar-primary font-semibold"
+                      >
+                        <LogIn className="h-4 w-4 mr-2" />
+                        {!collapsed && <span>Login</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to="/register"
+                        className="text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
+                        activeClassName="bg-sidebar-accent text-sidebar-primary font-semibold"
+                      >
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        {!collapsed && <span>Register</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </>
+              ) : (
+                <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      className="text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
-                      activeClassName="bg-sidebar-accent text-sidebar-primary font-semibold"
+                    <button
+                      onClick={handleSignOut}
+                      className="w-full flex items-center text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
                     >
-                      <item.icon className="h-4 w-4 mr-2" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
+                      <LogOut className="h-4 w-4 mr-2" />
+                      {!collapsed && <span>Sign Out</span>}
+                    </button>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-              ))}
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter className="p-4">
+        {!collapsed && user && (
+          <p className="text-[10px] text-sidebar-foreground/40 text-center truncate">
+            {user.email}
+          </p>
+        )}
         {!collapsed && (
           <p className="text-[10px] text-sidebar-foreground/40 text-center">
             © 2026 Savannah Seritech

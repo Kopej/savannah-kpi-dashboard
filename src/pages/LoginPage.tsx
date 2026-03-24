@@ -3,15 +3,28 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Leaf } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { signIn } = useAuth();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Auth not activated yet — structure only
+    setLoading(true);
+    const { error } = await signIn(email, password);
+    setLoading(false);
+    if (error) {
+      toast.error(error);
+    } else {
+      toast.success('Signed in successfully');
+      navigate('/');
+    }
   };
 
   return (
@@ -27,21 +40,18 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
             <Label className="text-xs text-muted-foreground">Email</Label>
-            <Input type="email" value={email} onChange={e => setEmail(e.target.value)} className="mt-1" placeholder="you@seritech.com" />
+            <Input type="email" value={email} onChange={e => setEmail(e.target.value)} className="mt-1" placeholder="you@seritech.com" required />
           </div>
           <div>
             <Label className="text-xs text-muted-foreground">Password</Label>
-            <Input type="password" value={password} onChange={e => setPassword(e.target.value)} className="mt-1" placeholder="••••••••" />
+            <Input type="password" value={password} onChange={e => setPassword(e.target.value)} className="mt-1" placeholder="••••••••" required />
           </div>
-          <Button type="submit" className="w-full kpi-gradient border-0 text-primary-foreground">
-            Sign In
+          <Button type="submit" disabled={loading} className="w-full kpi-gradient border-0 text-primary-foreground">
+            {loading ? 'Signing in...' : 'Sign In'}
           </Button>
         </form>
         <p className="text-center text-xs text-muted-foreground mt-4">
           Don't have an account? <Link to="/register" className="text-primary font-medium hover:underline">Register</Link>
-        </p>
-        <p className="text-center text-[10px] text-muted-foreground/50 mt-6">
-          Authentication is not yet activated. Access is unrestricted.
         </p>
       </div>
     </div>
