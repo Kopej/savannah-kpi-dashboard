@@ -14,6 +14,8 @@ export function KPICharts({ cyclesWithKPIs }: Props) {
       dfls: c.kpis.dflsBrushed,
       survival: Math.round((1 - c.kpis.totalMortality) * 100),
       hatchRate: Math.round(c.kpis.hatchRate * 100),
+      survivalTarget: 90,
+      hatchTarget: 95,
       cocoonWeight: c.avgWeightPerWetCocoon,
       shellRatio: Math.round(c.avgShellRatio * 100),
       wormWeight: c.finalLarvaeWeight,
@@ -112,6 +114,8 @@ export function KPICharts({ cyclesWithKPIs }: Props) {
             <YAxis tick={{ fontSize: 11 }} domain={[0, 100]} />
             <Tooltip {...tooltipStyle} />
             <Legend wrapperStyle={{ fontSize: 11 }} />
+            <Line type="monotone" dataKey="survivalTarget" stroke="hsl(152, 45%, 45%)" strokeWidth={1.5} strokeDasharray="6 3" dot={false} name="Survival Target (90%)" />
+            <Line type="monotone" dataKey="hatchTarget" stroke="hsl(199, 89%, 48%)" strokeWidth={1.5} strokeDasharray="6 3" dot={false} name="Hatch Target (95%)" />
             <Line type="monotone" dataKey="survival" stroke="hsl(152, 45%, 45%)" strokeWidth={2} dot={{ r: 4 }} name="Survival %" />
             <Line type="monotone" dataKey="hatchRate" stroke="hsl(199, 89%, 48%)" strokeWidth={2} dot={{ r: 4 }} name="Hatch Rate %" />
           </LineChart>
