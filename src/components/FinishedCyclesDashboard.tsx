@@ -214,7 +214,7 @@ export function FinishedCyclesDashboard({ cycles, assumptions }: Props) {
             <KPICard title="Hatch Rate" value={formatPercent(displayKPIs.hatchRate)} target="≥ 95%" icon={Activity} trafficLight={getTrafficLight(displayKPIs.hatchRate, 'hatchRate')} delay={0.12} />
             <KPICard title="Survival Rate" value={formatPercent(survivalRate)} target="≥ 90%" icon={TrendingUp} trafficLight={getTrafficLight(survivalRate, 'survivalRate')} delay={0.15} />
             <KPICard title="Avg Worm Weight" value={`${displayCycle.finalLarvaeWeight.toFixed(2)}g`} target="≥ 5.0g" icon={Weight} trafficLight={getTrafficLight(displayCycle.finalLarvaeWeight, 'wormWeight')} delay={0.18} />
-            <KPICard title="Wet Cocoons" value={formatKg(displayCycle.totalHarvestedWetCocoonWeight)} target={`Shell: ${formatPercent(displayCycle.avgShellRatio)}`} icon={Factory} trafficLight={getTrafficLight(displayCycle.avgShellRatio, 'shellRatio')} delay={0.21} />
+            <KPICard title="Wet Cocoon g/DFL" value={dflsBrushed > 0 ? `${formatNumber(displayCycle.totalHarvestedWetCocoonWeight * 1000 / dflsBrushed, 0)}g` : '—'} target="≥ 1,000g/DFL" icon={Factory} delay={0.21} />
             <KPICard title="Shell Ratio" value={formatPercent(displayCycle.avgShellRatio)} target="≥ 21%" icon={Scale} trafficLight={getTrafficLight(displayCycle.avgShellRatio, 'shellRatio')} delay={0.24} />
           </div>
         </div>
