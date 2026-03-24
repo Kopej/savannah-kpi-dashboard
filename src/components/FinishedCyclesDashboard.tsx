@@ -195,6 +195,7 @@ export function FinishedCyclesDashboard({ cycles, assumptions }: Props) {
               title="Feed Conversion Ratio"
               value={fcr > 0 && isFinite(fcr) ? `${fcr.toFixed(1)}` : '—'}
               subtitle="kg feed / kg wet cocoon"
+              target="≤ 20"
               icon={ArrowRightLeft}
               trafficLight={fcr > 0 && isFinite(fcr) ? getTrafficLight(fcr, 'fcr') : undefined}
               delay={0.12}
