@@ -78,7 +78,7 @@ export function KPICharts({ cyclesWithKPIs }: Props) {
             <YAxis tick={{ fontSize: 11 }} />
             <Tooltip {...tooltipStyle} />
             <Legend wrapperStyle={{ fontSize: 11 }} />
-            <ReferenceLine y={20} stroke="hsl(0, 72%, 51%)" strokeDasharray="6 3" strokeWidth={2} label={{ value: 'Target: 20', position: 'right', fontSize: 10, fill: 'hsl(0, 72%, 51%)' }} />
+            <Line type="monotone" dataKey="fcrTarget" stroke="hsl(0, 72%, 51%)" strokeWidth={1.5} strokeDasharray="6 3" dot={false} name="Target (20)" />
             <Line type="monotone" dataKey="feedPerCocoon" stroke="hsl(152, 45%, 45%)" strokeWidth={2} dot={{ r: 4 }} name="kg Leaf / kg Cocoon" />
           </LineChart>
         </ResponsiveContainer>
