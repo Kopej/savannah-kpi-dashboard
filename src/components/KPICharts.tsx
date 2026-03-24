@@ -14,6 +14,8 @@ export function KPICharts({ cyclesWithKPIs }: Props) {
       dfls: c.kpis.dflsBrushed,
       survival: Math.round((1 - c.kpis.totalMortality) * 100),
       hatchRate: Math.round(c.kpis.hatchRate * 100),
+      survivalTarget: 90,
+      hatchTarget: 95,
       cocoonWeight: c.avgWeightPerWetCocoon,
       shellRatio: Math.round(c.avgShellRatio * 100),
       wormWeight: c.finalLarvaeWeight,
