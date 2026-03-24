@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend, ComposedChart, ReferenceLine } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Bar, Legend, ComposedChart } from 'recharts';
 import type { CycleData, ComputedKPIs } from '@/lib/types';
 
 interface Props {
@@ -24,6 +24,9 @@ export function KPICharts({ cyclesWithKPIs }: Props) {
         : 0,
       dflConversion: c.kpis.dflToWetCocoonKg > 0 ? Math.round(c.kpis.dflToWetCocoonKg * 1000) : 0,
       reelability: Math.round(c.kpis.reelability * 100),
+      fcrTarget: 20,
+      cocoonTarget: 2,
+      wormTarget: 5,
     })),
     [cyclesWithKPIs]
   );
@@ -75,7 +78,7 @@ export function KPICharts({ cyclesWithKPIs }: Props) {
             <YAxis tick={{ fontSize: 11 }} />
             <Tooltip {...tooltipStyle} />
             <Legend wrapperStyle={{ fontSize: 11 }} />
-            <ReferenceLine y={20} stroke="hsl(0, 72%, 51%)" strokeDasharray="6 3" strokeWidth={2} label={{ value: 'Target: 20', position: 'right', fontSize: 10, fill: 'hsl(0, 72%, 51%)' }} />
+            <Line type="monotone" dataKey="fcrTarget" stroke="hsl(0, 72%, 51%)" strokeWidth={1.5} strokeDasharray="6 3" dot={false} name="Target (20)" />
             <Line type="monotone" dataKey="feedPerCocoon" stroke="hsl(152, 45%, 45%)" strokeWidth={2} dot={{ r: 4 }} name="kg Leaf / kg Cocoon" />
           </LineChart>
         </ResponsiveContainer>
@@ -91,8 +94,8 @@ export function KPICharts({ cyclesWithKPIs }: Props) {
             <YAxis tick={{ fontSize: 11 }} domain={[0, (dataMax: number) => Math.max(dataMax, 6)]} />
             <Tooltip {...tooltipStyle} />
             <Legend wrapperStyle={{ fontSize: 11 }} />
-            <ReferenceLine y={2} stroke="hsl(174, 62%, 32%)" strokeDasharray="6 3" strokeWidth={1.5} label={{ value: 'Target: 2g', position: 'right', fontSize: 9, fill: 'hsl(174, 62%, 32%)' }} />
-            <ReferenceLine y={5} stroke="hsl(38, 92%, 50%)" strokeDasharray="6 3" strokeWidth={1.5} label={{ value: 'Target: 5g', position: 'right', fontSize: 9, fill: 'hsl(38, 92%, 50%)' }} />
+            <Line type="monotone" dataKey="cocoonTarget" stroke="hsl(174, 62%, 32%)" strokeWidth={1.5} strokeDasharray="6 3" dot={false} name="Cocoon Target (2g)" />
+            <Line type="monotone" dataKey="wormTarget" stroke="hsl(38, 92%, 50%)" strokeWidth={1.5} strokeDasharray="6 3" dot={false} name="Worm Target (5g)" />
             <Line type="monotone" dataKey="cocoonWeight" stroke="hsl(174, 62%, 32%)" strokeWidth={2} dot={{ r: 4 }} name="Wet Cocoon Weight (g)" />
             <Line type="monotone" dataKey="wormWeight" stroke="hsl(38, 92%, 50%)" strokeWidth={2} dot={{ r: 4 }} name="Worm Weight (g)" />
           </LineChart>
