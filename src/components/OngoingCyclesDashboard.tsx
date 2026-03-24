@@ -277,8 +277,8 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
                       <YAxis tick={{ fontSize: 11 }} />
                       <Tooltip {...tooltipStyle} />
                       <Legend wrapperStyle={{ fontSize: 11 }} />
-                      <Line type="monotone" dataKey="mortality" stroke="hsl(0, 72%, 51%)" strokeWidth={2} dot={{ r: 4 }} name="Mortality %" />
-                      <Line type="monotone" dataKey="cumulative" stroke="hsl(38, 92%, 50%)" strokeWidth={2} dot={{ r: 4 }} name="Cumulative %" />
+                      <Line type="monotone" dataKey="cumulative" stroke="hsl(38, 92%, 50%)" strokeWidth={2} dot={{ r: 5 }} name="Cumulative %" />
+                      <Line type="monotone" dataKey="mortality" stroke="hsl(0, 72%, 51%)" strokeWidth={2.5} dot={{ r: 3, strokeWidth: 2 }} name="Mortality %" />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
