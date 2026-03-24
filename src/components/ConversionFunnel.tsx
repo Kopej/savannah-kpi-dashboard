@@ -48,7 +48,7 @@ export function ConversionFunnel({ cycle, kpis, assumptions, isAveraged, label }
   const transitions: FunnelTransition[] = [
     { metric: 'Wet Cocoons/DFL', value: wetConversionGPerDFL, target: 1000, format: 'ratio' },
     { metric: 'Wet → Dry', value: dryConversion, target: 0.50, thresholdKey: 'wetToDry', format: 'percent' },
-    { metric: 'Non-Defective', value: reelablePercent, target: 0.95, thresholdKey: 'nonDefective', format: 'percent' },
+    { metric: '% Reelable', value: reelablePercent, target: 0.95, thresholdKey: 'nonDefective', format: 'percent' },
   ];
 
   // Cycle 14 special
