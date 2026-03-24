@@ -82,8 +82,8 @@ export function KPICharts({ cyclesWithKPIs }: Props) {
       </div>
 
       <div className="glass-card rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-foreground mb-1 font-display">Cocoon Weight & Worm Weight (g)</h3>
-        <p className="text-[10px] text-muted-foreground mb-4">Avg Cocoon: {avgCocoonWt}g · Avg Worm: {avgWormWt}g</p>
+        <h3 className="text-sm font-semibold text-foreground mb-1 font-display">Wet Cocoon Weight & Worm Weight (g)</h3>
+        <p className="text-[10px] text-muted-foreground mb-4">Avg Wet Cocoon: {avgCocoonWt}g · Avg Worm: {avgWormWt}g</p>
         <ResponsiveContainer width="100%" height={260}>
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(170 15% 88%)" />
@@ -91,7 +91,9 @@ export function KPICharts({ cyclesWithKPIs }: Props) {
             <YAxis tick={{ fontSize: 11 }} />
             <Tooltip {...tooltipStyle} />
             <Legend wrapperStyle={{ fontSize: 11 }} />
-            <Line type="monotone" dataKey="cocoonWeight" stroke="hsl(174, 62%, 32%)" strokeWidth={2} dot={{ r: 4 }} name="Cocoon Weight (g)" />
+            <ReferenceLine y={2} stroke="hsl(174, 62%, 32%)" strokeDasharray="6 3" strokeWidth={1.5} label={{ value: 'Target: 2g', position: 'right', fontSize: 9, fill: 'hsl(174, 62%, 32%)' }} />
+            <ReferenceLine y={5} stroke="hsl(38, 92%, 50%)" strokeDasharray="6 3" strokeWidth={1.5} label={{ value: 'Target: 5g', position: 'right', fontSize: 9, fill: 'hsl(38, 92%, 50%)' }} />
+            <Line type="monotone" dataKey="cocoonWeight" stroke="hsl(174, 62%, 32%)" strokeWidth={2} dot={{ r: 4 }} name="Wet Cocoon Weight (g)" />
             <Line type="monotone" dataKey="wormWeight" stroke="hsl(38, 92%, 50%)" strokeWidth={2} dot={{ r: 4 }} name="Worm Weight (g)" />
           </LineChart>
         </ResponsiveContainer>
