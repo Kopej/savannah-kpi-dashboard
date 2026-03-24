@@ -24,6 +24,9 @@ export function KPICharts({ cyclesWithKPIs }: Props) {
         : 0,
       dflConversion: c.kpis.dflToWetCocoonKg > 0 ? Math.round(c.kpis.dflToWetCocoonKg * 1000) : 0,
       reelability: Math.round(c.kpis.reelability * 100),
+      fcrTarget: 20,
+      cocoonTarget: 2,
+      wormTarget: 5,
     })),
     [cyclesWithKPIs]
   );
