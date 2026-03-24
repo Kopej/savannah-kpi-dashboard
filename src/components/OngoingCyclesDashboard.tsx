@@ -310,21 +310,6 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
             </div>
           </div>
 
-          {/* Divider + Editable Section */}
-          <div className="relative pt-2">
-            <div className="absolute inset-x-0 top-0 h-px bg-border" />
-            <div className="rounded-xl bg-muted/40 border border-border p-6 space-y-4">
-              <div>
-                <h2 className="text-sm font-semibold text-foreground font-display">
-                  Edit Cycle Data
-                </h2>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Update cycle data below. Changes will automatically update KPIs and charts.
-                </p>
-              </div>
-              <CycleDataTable cycle={selectedCycle} />
-            </div>
-          </div>
         </motion.div>
       )}
     </div>
