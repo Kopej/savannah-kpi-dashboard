@@ -6,7 +6,7 @@ import { KPICharts } from '@/components/KPICharts';
 import { FinishedCycleTable } from '@/components/FinishedCycleTable';
 import { ConversionFunnel } from '@/components/ConversionFunnel';
 import { getTrafficLight } from '@/lib/kpiThresholds';
-import { Activity, Bug, Calendar, Factory, Scale, TrendingUp, Weight, Layers, Leaf, ArrowRightLeft, Sparkles } from 'lucide-react';
+import { Activity, Bug, Calendar, Factory, Scale, TrendingUp, Weight, Layers, Leaf, ArrowRightLeft, Sparkles, CircleOff } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
