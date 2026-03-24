@@ -217,7 +217,7 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
               <KPICard
                 title="Feed Consumption"
                 value={`${formatNumber(leafFedKg, 1)} kg`}
-                subtitle={`${formatNumber(selectedCycle.totalLeafWeightFed)}g total`}
+                subtitle={undefined}
                 icon={Leaf}
                 delay={0.12}
               />
