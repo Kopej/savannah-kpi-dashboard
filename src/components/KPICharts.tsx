@@ -88,7 +88,7 @@ export function KPICharts({ cyclesWithKPIs }: Props) {
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(170 15% 88%)" />
             <XAxis dataKey="cycle" tick={{ fontSize: 11 }} />
-            <YAxis tick={{ fontSize: 11 }} />
+            <YAxis tick={{ fontSize: 11 }} domain={[0, (dataMax: number) => Math.max(dataMax, 6)]} />
             <Tooltip {...tooltipStyle} />
             <Legend wrapperStyle={{ fontSize: 11 }} />
             <ReferenceLine y={2} stroke="hsl(174, 62%, 32%)" strokeDasharray="6 3" strokeWidth={1.5} label={{ value: 'Target: 2g', position: 'right', fontSize: 9, fill: 'hsl(174, 62%, 32%)' }} />
