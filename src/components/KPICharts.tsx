@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend, ComposedChart } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend, ComposedChart, ReferenceLine } from 'recharts';
 import type { CycleData, ComputedKPIs } from '@/lib/types';
 
 interface Props {
@@ -69,13 +69,15 @@ export function KPICharts({ cyclesWithKPIs }: Props) {
         <h3 className="text-sm font-semibold text-foreground mb-1 font-display">Feed Conversion (kg leaf / kg cocoon)</h3>
         <p className="text-[10px] text-muted-foreground mb-4">Average: {avgFeed} kg leaf per kg wet cocoon</p>
         <ResponsiveContainer width="100%" height={260}>
-          <BarChart data={validFeed}>
+          <LineChart data={validFeed}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(170 15% 88%)" />
             <XAxis dataKey="cycle" tick={{ fontSize: 11 }} />
             <YAxis tick={{ fontSize: 11 }} />
             <Tooltip {...tooltipStyle} />
-            <Bar dataKey="feedPerCocoon" fill="hsl(152, 45%, 45%)" radius={[4, 4, 0, 0]} name="kg Leaf / kg Cocoon" />
-          </BarChart>
+            <Legend wrapperStyle={{ fontSize: 11 }} />
+            <ReferenceLine y={20} stroke="hsl(0, 72%, 51%)" strokeDasharray="6 3" strokeWidth={2} label={{ value: 'Target: 20', position: 'right', fontSize: 10, fill: 'hsl(0, 72%, 51%)' }} />
+            <Line type="monotone" dataKey="feedPerCocoon" stroke="hsl(152, 45%, 45%)" strokeWidth={2} dot={{ r: 4 }} name="kg Leaf / kg Cocoon" />
+          </LineChart>
         </ResponsiveContainer>
       </div>
 
