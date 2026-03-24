@@ -8,6 +8,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useAppState } from '@/lib/store';
+import { CycleProgressBar } from '@/components/CycleProgressBar';
 
 import {
   AlertDialog,
@@ -167,6 +168,11 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
           );
         })()}
       </div>
+
+      {/* Cycle Progress Bar */}
+      {selectedCycle && currentDayOfCycle > 0 && (
+        <CycleProgressBar cycle={selectedCycle} currentDay={currentDayOfCycle} />
+      )}
 
       {selectedCycle && kpis && (
         <motion.div
