@@ -275,9 +275,10 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
                     <LineChart data={instarMortalityData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(170 15% 88%)" />
                       <XAxis dataKey="instar" tick={{ fontSize: 11 }} />
-                      <YAxis tick={{ fontSize: 11 }} />
+                      <YAxis tick={{ fontSize: 11 }} domain={[0, (dataMax: number) => Math.max(dataMax, 3)]} />
                       <Tooltip {...tooltipStyle} />
                       <Legend wrapperStyle={{ fontSize: 11 }} />
+                      <Line type="monotone" dataKey="mortalityTarget" stroke="hsl(152, 45%, 45%)" strokeWidth={1.5} strokeDasharray="6 3" dot={false} name="Target (< 2%)" />
                       <Line type="monotone" dataKey="cumulative" stroke="hsl(38, 92%, 50%)" strokeWidth={2} dot={{ r: 5 }} name="Cumulative %" />
                       <Line type="monotone" dataKey="mortality" stroke="hsl(0, 72%, 51%)" strokeWidth={2.5} dot={{ r: 3, strokeWidth: 2 }} name="Mortality %" />
                     </LineChart>
