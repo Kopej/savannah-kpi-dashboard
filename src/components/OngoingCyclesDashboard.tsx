@@ -73,6 +73,7 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
     instar: `Instar ${i.instar}`,
     mortality: Math.round(i.mortalityRatePercent * 10000) / 100,
     cumulative: Math.round(i.cumulativeMortalityRatePercent * 10000) / 100,
+    mortalityTarget: 2,
   })) || [];
 
   const tooltipStyle = {
