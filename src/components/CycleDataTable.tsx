@@ -20,6 +20,9 @@ interface EditState {
   wetWeightDefective: number;
   avgWeightPerWetCocoon: number;
   avgShellRatio: number;
+  driedCocoonWeightKg: number;
+  reelableCocoonWeightKg: number;
+  reeledSilkWeightKg: number;
 }
 
 function calcMortalityRate(mortality: number, hatchedEggs: number): number {
