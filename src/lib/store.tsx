@@ -36,6 +36,7 @@ function dbRowToCycle(row: any): CycleData {
       feedPerDFLTarget: i.feedPerDFLTarget,
     } as InstarData)) : undefined,
     driedCocoonWeightKg: row.dried_cocoon_weight_kg != null ? Number(row.dried_cocoon_weight_kg) : undefined,
+    reelableCocoonWeightKg: row.reelable_cocoon_weight_kg != null ? Number(row.reelable_cocoon_weight_kg) : undefined,
     reeledSilkWeightKg: row.reeled_silk_weight_kg != null ? Number(row.reeled_silk_weight_kg) : undefined,
     cycleDurationDays: row.cycle_duration_days ?? undefined,
     wetCocoonTarget: row.wet_cocoon_target != null ? Number(row.wet_cocoon_target) : undefined,
