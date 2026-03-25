@@ -4,6 +4,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { CycleDataTable } from '@/components/CycleDataTable';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ShieldAlert, Database } from 'lucide-react';
+import { useInstarTargets } from '@/hooks/useInstarTargets';
+import { InstarTargetSettings } from '@/components/InstarTargetSettings';
 
 export default function DataInputPage() {
   const { user, isAdmin, loading: authLoading } = useAuth();
