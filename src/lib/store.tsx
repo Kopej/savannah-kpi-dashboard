@@ -269,6 +269,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (updates.reelableCocoonWeightKg !== undefined) dbUpdates.reelable_cocoon_weight_kg = updates.reelableCocoonWeightKg;
     if (updates.reeledSilkWeightKg !== undefined) dbUpdates.reeled_silk_weight_kg = updates.reeledSilkWeightKg;
     if (updates.cycleDurationDays !== undefined) dbUpdates.cycle_duration_days = updates.cycleDurationDays;
+    if (updates.completionDate !== undefined) dbUpdates.completion_date = updates.completionDate;
     if (updates.wetCocoonTarget !== undefined) dbUpdates.wet_cocoon_target = updates.wetCocoonTarget;
     if (updates.currentDayOfCycle !== undefined) dbUpdates.current_day_of_cycle = updates.currentDayOfCycle;
 
