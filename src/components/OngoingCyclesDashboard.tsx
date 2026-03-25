@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useAppState } from '@/lib/store';
 import { CycleProgressBar } from '@/components/CycleProgressBar';
+import { InstarPerformanceTable } from '@/components/InstarPerformanceTable';
 
 import {
   AlertDialog,
