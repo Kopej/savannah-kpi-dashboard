@@ -39,6 +39,7 @@ function dbRowToCycle(row: any): CycleData {
     reelableCocoonWeightKg: row.reelable_cocoon_weight_kg != null ? Number(row.reelable_cocoon_weight_kg) : undefined,
     reeledSilkWeightKg: row.reeled_silk_weight_kg != null ? Number(row.reeled_silk_weight_kg) : undefined,
     cycleDurationDays: row.cycle_duration_days ?? undefined,
+    completionDate: row.completion_date ?? undefined,
     wetCocoonTarget: row.wet_cocoon_target != null ? Number(row.wet_cocoon_target) : undefined,
     currentDayOfCycle: row.current_day_of_cycle ?? undefined,
   };
