@@ -228,6 +228,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (updates.hatchRatePercent !== undefined) dbUpdates.hatch_rate_percent = updates.hatchRatePercent;
     if (updates.instars !== undefined) dbUpdates.instars = updates.instars as unknown as Json;
     if (updates.driedCocoonWeightKg !== undefined) dbUpdates.dried_cocoon_weight_kg = updates.driedCocoonWeightKg;
+    if (updates.reelableCocoonWeightKg !== undefined) dbUpdates.reelable_cocoon_weight_kg = updates.reelableCocoonWeightKg;
     if (updates.reeledSilkWeightKg !== undefined) dbUpdates.reeled_silk_weight_kg = updates.reeledSilkWeightKg;
     if (updates.cycleDurationDays !== undefined) dbUpdates.cycle_duration_days = updates.cycleDurationDays;
     if (updates.wetCocoonTarget !== undefined) dbUpdates.wet_cocoon_target = updates.wetCocoonTarget;
