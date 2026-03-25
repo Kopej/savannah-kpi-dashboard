@@ -265,6 +265,21 @@ export function CycleDataTable({ cycle }: Props) {
                   </td>
                 ))}
               </tr>
+
+              {/* Avg Larvae Weight (g) */}
+              <tr className="hover:bg-muted/20">
+                <td className={labelCell}>Avg Larvae Weight (g)</td>
+                {state.instars.map((inst, i) => (
+                  <td key={i} className={editing ? editableCell : cellBase}>
+                    <EditableNum
+                      value={inst.avgLarvaeWeight || 0}
+                      onChange={v => updateInstar(i, 'avgLarvaeWeight' as keyof InstarData, v)}
+                      step="0.01"
+                      disabled={i < 2}
+                    />
+                  </td>
+                ))}
+              </tr>
             </tbody>
           </table>
         </div>
