@@ -20,6 +20,9 @@ interface EditState {
   wetWeightDefective: number;
   avgWeightPerWetCocoon: number;
   avgShellRatio: number;
+  driedCocoonWeightKg: number;
+  reelableCocoonWeightKg: number;
+  reeledSilkWeightKg: number;
 }
 
 function calcMortalityRate(mortality: number, hatchedEggs: number): number {
@@ -65,6 +68,9 @@ export function CycleDataTable({ cycle }: Props) {
         : 0,
       avgWeightPerWetCocoon: cycle.avgWeightPerWetCocoon || 0,
       avgShellRatio: Math.round((cycle.avgShellRatio || 0) * 100 * 100) / 100,
+      driedCocoonWeightKg: cycle.driedCocoonWeightKg || 0,
+      reelableCocoonWeightKg: cycle.reelableCocoonWeightKg || 0,
+      reeledSilkWeightKg: cycle.reeledSilkWeightKg || 0,
     };
   }, [cycle]);
 
@@ -115,6 +121,9 @@ export function CycleDataTable({ cycle }: Props) {
       percentNonDefective: Math.max(0, nonDefectivePercent),
       avgWeightPerWetCocoon: state.avgWeightPerWetCocoon,
       avgShellRatio: state.avgShellRatio / 100,
+      driedCocoonWeightKg: state.driedCocoonWeightKg || undefined,
+      reelableCocoonWeightKg: state.reelableCocoonWeightKg || undefined,
+      reeledSilkWeightKg: state.reeledSilkWeightKg || undefined,
     });
 
     setSaved(true);
@@ -320,6 +329,40 @@ export function CycleDataTable({ cycle }: Props) {
             onChange={v => updateField('avgShellRatio', v)}
             editing={editing}
             step="0.1"
+          />
+        </div>
+      </div>
+
+      {/* Post-Processing Data (always visible, useful for finished cycles) */}
+      <div className="rounded-xl border-2 border-warning/30 bg-warning/[0.03] p-5 space-y-4">
+        <div className="flex items-center gap-2 mb-1">
+          <div className="h-2 w-2 rounded-full bg-warning" />
+          <h3 className="text-sm font-bold text-foreground font-display tracking-wide uppercase">
+            Post-Processing Data
+          </h3>
+          <span className="text-[10px] text-muted-foreground ml-1">Drying, reeling & grading — add when available</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <MetricField
+            label="Dried Cocoon Weight (kg)"
+            value={state.driedCocoonWeightKg}
+            onChange={v => updateField('driedCocoonWeightKg', v)}
+            editing={editing}
+            step="0.01"
+          />
+          <MetricField
+            label="Reelable Cocoon Weight (kg)"
+            value={state.reelableCocoonWeightKg}
+            onChange={v => updateField('reelableCocoonWeightKg', v)}
+            editing={editing}
+            step="0.01"
+          />
+          <MetricField
+            label="Reeled Silk Weight (kg)"
+            value={state.reeledSilkWeightKg}
+            onChange={v => updateField('reeledSilkWeightKg', v)}
+            editing={editing}
+            step="0.01"
           />
         </div>
       </div>

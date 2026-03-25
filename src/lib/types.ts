@@ -32,6 +32,7 @@ export interface CycleData {
   instars?: InstarData[];
   // Dried/reeled data (finished cycles, optional)
   driedCocoonWeightKg?: number;
+  reelableCocoonWeightKg?: number;
   reeledSilkWeightKg?: number;
   cycleDurationDays?: number; // total days for full cycle
   // Per-cycle editable targets

@@ -36,6 +36,7 @@ function dbRowToCycle(row: any): CycleData {
       feedPerDFLTarget: i.feedPerDFLTarget,
     } as InstarData)) : undefined,
     driedCocoonWeightKg: row.dried_cocoon_weight_kg != null ? Number(row.dried_cocoon_weight_kg) : undefined,
+    reelableCocoonWeightKg: row.reelable_cocoon_weight_kg != null ? Number(row.reelable_cocoon_weight_kg) : undefined,
     reeledSilkWeightKg: row.reeled_silk_weight_kg != null ? Number(row.reeled_silk_weight_kg) : undefined,
     cycleDurationDays: row.cycle_duration_days ?? undefined,
     wetCocoonTarget: row.wet_cocoon_target != null ? Number(row.wet_cocoon_target) : undefined,
@@ -63,6 +64,7 @@ function cycleToDbRow(c: CycleData) {
     hatch_rate_percent: c.hatchRatePercent ?? 0,
     instars: (c.instars ?? []) as unknown as Json,
     dried_cocoon_weight_kg: c.driedCocoonWeightKg ?? null,
+    reelable_cocoon_weight_kg: c.reelableCocoonWeightKg ?? null,
     reeled_silk_weight_kg: c.reeledSilkWeightKg ?? null,
     cycle_duration_days: c.cycleDurationDays ?? null,
     wet_cocoon_target: c.wetCocoonTarget ?? null,
@@ -226,6 +228,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (updates.hatchRatePercent !== undefined) dbUpdates.hatch_rate_percent = updates.hatchRatePercent;
     if (updates.instars !== undefined) dbUpdates.instars = updates.instars as unknown as Json;
     if (updates.driedCocoonWeightKg !== undefined) dbUpdates.dried_cocoon_weight_kg = updates.driedCocoonWeightKg;
+    if (updates.reelableCocoonWeightKg !== undefined) dbUpdates.reelable_cocoon_weight_kg = updates.reelableCocoonWeightKg;
     if (updates.reeledSilkWeightKg !== undefined) dbUpdates.reeled_silk_weight_kg = updates.reeledSilkWeightKg;
     if (updates.cycleDurationDays !== undefined) dbUpdates.cycle_duration_days = updates.cycleDurationDays;
     if (updates.wetCocoonTarget !== undefined) dbUpdates.wet_cocoon_target = updates.wetCocoonTarget;
