@@ -299,7 +299,7 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
 
           {/* Instar Performance vs Targets */}
           {selectedCycle.instars && selectedCycle.instars.length > 0 && (
-            <InstarPerformanceTable cycle={selectedCycle} dflsBrushed={dflsBrushed} />
+            <InstarPerformanceTable cycle={selectedCycle} dflsBrushed={dflsBrushed} targets={instarTargets} />
           )}
 
           {/* Raw Data Summary */}

@@ -111,6 +111,11 @@ export default function DataInputPage() {
         </div>
       </div>
 
+      {/* Instar Target Settings */}
+      {!targetsLoading && (
+        <InstarTargetSettings targets={targets} onUpdate={updateTarget} />
+      )}
+
       {/* Editable Data Table */}
       {selectedCycle ? (
         <div className="rounded-xl bg-muted/40 border border-border p-6 space-y-4">
