@@ -295,6 +295,11 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
             </div>
           )}
 
+          {/* Instar Performance vs Targets */}
+          {selectedCycle.instars && selectedCycle.instars.length > 0 && (
+            <InstarPerformanceTable cycle={selectedCycle} dflsBrushed={dflsBrushed} />
+          )}
+
           {/* Raw Data Summary */}
           <div className="glass-card rounded-xl p-5">
             <h3 className="text-sm font-semibold text-foreground font-display mb-4">Cycle {selectedCycle.cycleNumber} — Raw Data</h3>
