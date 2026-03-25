@@ -99,6 +99,7 @@ export function FinishedCyclesDashboard({ cycles, assumptions }: Props) {
       totalEggs: Math.round(activeCycles.reduce((s, c) => s + (c.totalEggs || c.estimatedStartingEggCount), 0) / n),
       hatchRatePercent: activeCycles.reduce((s, c) => s + (c.hatchRatePercent || 0), 0) / n,
       driedCocoonWeightKg: activeCycles.some(c => c.driedCocoonWeightKg) ? activeCycles.reduce((s, c) => s + (c.driedCocoonWeightKg || 0), 0) / n : undefined,
+      reelableCocoonWeightKg: activeCycles.some(c => c.reelableCocoonWeightKg) ? activeCycles.reduce((s, c) => s + (c.reelableCocoonWeightKg || 0), 0) / n : undefined,
     };
   }, [isMultiSelect, activeCycles]);
 
