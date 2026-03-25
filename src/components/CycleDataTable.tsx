@@ -121,6 +121,9 @@ export function CycleDataTable({ cycle }: Props) {
       percentNonDefective: Math.max(0, nonDefectivePercent),
       avgWeightPerWetCocoon: state.avgWeightPerWetCocoon,
       avgShellRatio: state.avgShellRatio / 100,
+      driedCocoonWeightKg: state.driedCocoonWeightKg || undefined,
+      reelableCocoonWeightKg: state.reelableCocoonWeightKg || undefined,
+      reeledSilkWeightKg: state.reeledSilkWeightKg || undefined,
     });
 
     setSaved(true);
