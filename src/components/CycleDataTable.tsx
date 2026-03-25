@@ -68,6 +68,9 @@ export function CycleDataTable({ cycle }: Props) {
         : 0,
       avgWeightPerWetCocoon: cycle.avgWeightPerWetCocoon || 0,
       avgShellRatio: Math.round((cycle.avgShellRatio || 0) * 100 * 100) / 100,
+      driedCocoonWeightKg: cycle.driedCocoonWeightKg || 0,
+      reelableCocoonWeightKg: cycle.reelableCocoonWeightKg || 0,
+      reeledSilkWeightKg: cycle.reeledSilkWeightKg || 0,
     };
   }, [cycle]);
 
