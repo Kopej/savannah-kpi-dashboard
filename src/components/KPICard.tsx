@@ -23,7 +23,7 @@ export function KPICard({ title, value, subtitle, target, icon: Icon, trafficLig
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">{title}</p>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{title}</p>
             {trafficLight && (
               <span className={`inline-block h-2.5 w-2.5 rounded-full shrink-0 ${getTrafficLightDot(trafficLight)}`} />
             )}

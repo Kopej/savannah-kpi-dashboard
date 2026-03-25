@@ -187,7 +187,7 @@ export function FinishedCyclesDashboard({ cycles, assumptions }: Props) {
             <Sparkles className="h-4 w-4 text-primary" />
             {cycleLabel}
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             <KPICard title="Number of DFLs" value={formatNumber(dflsBrushed)} subtitle={`${assumptions.wormsPerDFL} worms/DFL`} icon={Layers} delay={0} />
             <KPICard title="Cycle Duration" value={cycleDays > 0 ? `${cycleDays} days` : '—'} subtitle={isMultiSelect ? 'avg across cycles' : 'hatch to harvest'} icon={Calendar} delay={0.03} />
             <KPICard title="Total Worm Count" value={formatNumber(totalWormCount)} subtitle="Eggs × Hatch Rate" icon={Bug} delay={0.06} />
@@ -211,7 +211,7 @@ export function FinishedCyclesDashboard({ cycles, assumptions }: Props) {
           <h2 className="text-sm font-semibold text-foreground font-display mb-3">
             Performance Indicators
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             <KPICard title="Hatch Rate" value={formatPercent(displayKPIs.hatchRate)} target="≥ 95%" icon={Activity} trafficLight={getTrafficLight(displayKPIs.hatchRate, 'hatchRate')} delay={0.12} />
             <KPICard title="Survival Rate" value={formatPercent(survivalRate)} target="≥ 90%" icon={TrendingUp} trafficLight={getTrafficLight(survivalRate, 'survivalRate')} delay={0.15} />
             <KPICard title="% Unspun Larvae" value={formatPercent(displayCycle.mortalityCocooning)} target="≤ 5%" icon={CircleOff} trafficLight={getTrafficLight(displayCycle.mortalityCocooning, 'unspunLarvae')} delay={0.17} />
