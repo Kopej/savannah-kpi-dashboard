@@ -31,6 +31,7 @@ interface Props {
 
 export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
   const { markCycleFinished } = useAppState();
+  const { targets: instarTargets } = useInstarTargets();
   const ongoingCycles = useMemo(() => getOngoingCycles(cycles), [cycles]);
 
   const [selectedCycleId, setSelectedCycleId] = useState<string>(
