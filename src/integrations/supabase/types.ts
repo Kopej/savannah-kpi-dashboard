@@ -34,6 +34,7 @@ export type Database = {
           mortality_cocooning: number
           mortality_pre_cocooning: number
           percent_non_defective: number
+          reelable_cocoon_weight_kg: number | null
           reeled_silk_weight_kg: number | null
           status: string
           total_eggs: number | null
@@ -61,6 +62,7 @@ export type Database = {
           mortality_cocooning?: number
           mortality_pre_cocooning?: number
           percent_non_defective?: number
+          reelable_cocoon_weight_kg?: number | null
           reeled_silk_weight_kg?: number | null
           status?: string
           total_eggs?: number | null
@@ -88,6 +90,7 @@ export type Database = {
           mortality_cocooning?: number
           mortality_pre_cocooning?: number
           percent_non_defective?: number
+          reelable_cocoon_weight_kg?: number | null
           reeled_silk_weight_kg?: number | null
           status?: string
           total_eggs?: number | null

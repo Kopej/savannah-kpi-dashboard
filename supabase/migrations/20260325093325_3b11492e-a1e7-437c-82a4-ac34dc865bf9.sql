@@ -1,0 +1,1 @@
+ALTER TABLE public.cycles ADD COLUMN IF NOT EXISTS reelable_cocoon_weight_kg NUMERIC DEFAULT NULL;
