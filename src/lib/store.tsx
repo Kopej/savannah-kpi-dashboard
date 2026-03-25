@@ -203,10 +203,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const markCycleFinished = useCallback(async (id: string) => {
-    setCycles(prev => prev.map(c => c.id === id ? { ...c, status: 'finished' as const } : c));
-    const { error } = await supabase.from('cycles').update({ status: 'finished' }).eq('id', id);
+    const now = new Date();
+    const completionDate = now.toISOString().split('T')[0];
+
+    setCycles(prev => prev.map(c => {
+      if (c.id !== id) return c;
+      const hatch = new Date(c.hatchDate);
+      const durationDays = Math.max(1, Math.round((now.getTime() - hatch.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+      return { ...c, status: 'finished' as const, cycleDurationDays: durationDays, completionDate };
+    }));
+
+    // Compute duration for DB update
+    const cycle = cycles.find(c => c.id === id);
+    let durationDays: number | null = null;
+    if (cycle?.hatchDate) {
+      const hatch = new Date(cycle.hatchDate);
+      durationDays = Math.max(1, Math.round((now.getTime() - hatch.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+    }
+
+    const { error } = await supabase.from('cycles').update({
+      status: 'finished',
+      cycle_duration_days: durationDays,
+      completion_date: completionDate,
+    }).eq('id', id);
     if (error) console.error('[Store] markCycleFinished error:', error);
-  }, []);
+  }, [cycles]);
 
   const updateCycleData = useCallback(async (id: string, updates: Partial<CycleData>) => {
     setCycles(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
