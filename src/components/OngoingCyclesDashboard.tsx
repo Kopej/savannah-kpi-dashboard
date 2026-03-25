@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useAppState } from '@/lib/store';
 import { CycleProgressBar } from '@/components/CycleProgressBar';
+import { InstarPerformanceTable } from '@/components/InstarPerformanceTable';
 
 import {
   AlertDialog,
@@ -292,6 +293,11 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
                 </div>
               </div>
             </div>
+          )}
+
+          {/* Instar Performance vs Targets */}
+          {selectedCycle.instars && selectedCycle.instars.length > 0 && (
+            <InstarPerformanceTable cycle={selectedCycle} dflsBrushed={dflsBrushed} />
           )}
 
           {/* Raw Data Summary */}
