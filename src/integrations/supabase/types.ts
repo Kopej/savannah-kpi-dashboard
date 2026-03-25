@@ -169,6 +169,36 @@ export type Database = {
           },
         ]
       }
+      instar_targets: {
+        Row: {
+          created_at: string
+          feed_target_per_100_dfl: number
+          id: string
+          instar: number
+          larvae_weight_target_g: number
+          mortality_target_percent: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          feed_target_per_100_dfl?: number
+          id?: string
+          instar: number
+          larvae_weight_target_g?: number
+          mortality_target_percent?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          feed_target_per_100_dfl?: number
+          id?: string
+          instar?: number
+          larvae_weight_target_g?: number
+          mortality_target_percent?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tickets: {
         Row: {
           category: string

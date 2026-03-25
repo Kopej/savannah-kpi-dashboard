@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { useAppState } from '@/lib/store';
 import { CycleProgressBar } from '@/components/CycleProgressBar';
 import { InstarPerformanceTable } from '@/components/InstarPerformanceTable';
+import { useInstarTargets } from '@/hooks/useInstarTargets';
 
 import {
   AlertDialog,
@@ -30,6 +31,7 @@ interface Props {
 
 export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
   const { markCycleFinished } = useAppState();
+  const { targets: instarTargets } = useInstarTargets();
   const ongoingCycles = useMemo(() => getOngoingCycles(cycles), [cycles]);
 
   const [selectedCycleId, setSelectedCycleId] = useState<string>(
@@ -297,7 +299,7 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
 
           {/* Instar Performance vs Targets */}
           {selectedCycle.instars && selectedCycle.instars.length > 0 && (
-            <InstarPerformanceTable cycle={selectedCycle} dflsBrushed={dflsBrushed} />
+            <InstarPerformanceTable cycle={selectedCycle} dflsBrushed={dflsBrushed} targets={instarTargets} />
           )}
 
           {/* Raw Data Summary */}
