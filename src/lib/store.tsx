@@ -164,7 +164,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
           if (seedErr) throw seedErr;
           setCycles((inserted || []).map(dbRowToCycle));
         } else {
-          setCycles(cycleRows.map(dbRowToCycle));
+          const loadedCycles = cycleRows.map(dbRowToCycle);
+
+          // Backfill: compute duration for finished cycles missing it
+          for (const c of loadedCycles) {
+            if (c.status === 'finished' && (!c.cycleDurationDays || c.cycleDurationDays === 0) && c.hatchDate) {
+              const hatch = new Date(c.hatchDate);
+              const end = c.completionDate ? new Date(c.completionDate) : new Date();
+              const duration = Math.max(1, Math.round((end.getTime() - hatch.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+              c.cycleDurationDays = duration;
+              // Persist backfill
+              supabase.from('cycles').update({ cycle_duration_days: duration }).eq('id', c.id)
+                .then(({ error }) => { if (error) console.error('[Store] backfill duration error:', error); });
+            }
+          }
+
+          setCycles(loadedCycles);
         }
 
         // Fetch tickets
