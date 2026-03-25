@@ -39,6 +39,7 @@ function dbRowToCycle(row: any): CycleData {
     reelableCocoonWeightKg: row.reelable_cocoon_weight_kg != null ? Number(row.reelable_cocoon_weight_kg) : undefined,
     reeledSilkWeightKg: row.reeled_silk_weight_kg != null ? Number(row.reeled_silk_weight_kg) : undefined,
     cycleDurationDays: row.cycle_duration_days ?? undefined,
+    completionDate: row.completion_date ?? undefined,
     wetCocoonTarget: row.wet_cocoon_target != null ? Number(row.wet_cocoon_target) : undefined,
     currentDayOfCycle: row.current_day_of_cycle ?? undefined,
   };
@@ -67,6 +68,7 @@ function cycleToDbRow(c: CycleData) {
     reelable_cocoon_weight_kg: c.reelableCocoonWeightKg ?? null,
     reeled_silk_weight_kg: c.reeledSilkWeightKg ?? null,
     cycle_duration_days: c.cycleDurationDays ?? null,
+    completion_date: c.completionDate ?? null,
     wet_cocoon_target: c.wetCocoonTarget ?? null,
     current_day_of_cycle: c.currentDayOfCycle ?? null,
   };
@@ -162,7 +164,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
           if (seedErr) throw seedErr;
           setCycles((inserted || []).map(dbRowToCycle));
         } else {
-          setCycles(cycleRows.map(dbRowToCycle));
+          const loadedCycles = cycleRows.map(dbRowToCycle);
+
+          // Backfill: compute duration for finished cycles missing it
+          for (const c of loadedCycles) {
+            if (c.status === 'finished' && (!c.cycleDurationDays || c.cycleDurationDays === 0) && c.hatchDate) {
+              const hatch = new Date(c.hatchDate);
+              const end = c.completionDate ? new Date(c.completionDate) : new Date();
+              const duration = Math.max(1, Math.round((end.getTime() - hatch.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+              c.cycleDurationDays = duration;
+              // Persist backfill
+              supabase.from('cycles').update({ cycle_duration_days: duration }).eq('id', c.id)
+                .then(({ error }) => { if (error) console.error('[Store] backfill duration error:', error); });
+            }
+          }
+
+          setCycles(loadedCycles);
         }
 
         // Fetch tickets
@@ -201,10 +218,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const markCycleFinished = useCallback(async (id: string) => {
-    setCycles(prev => prev.map(c => c.id === id ? { ...c, status: 'finished' as const } : c));
-    const { error } = await supabase.from('cycles').update({ status: 'finished' }).eq('id', id);
+    const now = new Date();
+    const completionDate = now.toISOString().split('T')[0];
+
+    setCycles(prev => prev.map(c => {
+      if (c.id !== id) return c;
+      const hatch = new Date(c.hatchDate);
+      const durationDays = Math.max(1, Math.round((now.getTime() - hatch.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+      return { ...c, status: 'finished' as const, cycleDurationDays: durationDays, completionDate };
+    }));
+
+    // Compute duration for DB update
+    const cycle = cycles.find(c => c.id === id);
+    let durationDays: number | null = null;
+    if (cycle?.hatchDate) {
+      const hatch = new Date(cycle.hatchDate);
+      durationDays = Math.max(1, Math.round((now.getTime() - hatch.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+    }
+
+    const { error } = await supabase.from('cycles').update({
+      status: 'finished',
+      cycle_duration_days: durationDays,
+      completion_date: completionDate,
+    }).eq('id', id);
     if (error) console.error('[Store] markCycleFinished error:', error);
-  }, []);
+  }, [cycles]);
 
   const updateCycleData = useCallback(async (id: string, updates: Partial<CycleData>) => {
     setCycles(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
@@ -231,6 +269,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (updates.reelableCocoonWeightKg !== undefined) dbUpdates.reelable_cocoon_weight_kg = updates.reelableCocoonWeightKg;
     if (updates.reeledSilkWeightKg !== undefined) dbUpdates.reeled_silk_weight_kg = updates.reeledSilkWeightKg;
     if (updates.cycleDurationDays !== undefined) dbUpdates.cycle_duration_days = updates.cycleDurationDays;
+    if (updates.completionDate !== undefined) dbUpdates.completion_date = updates.completionDate;
     if (updates.wetCocoonTarget !== undefined) dbUpdates.wet_cocoon_target = updates.wetCocoonTarget;
     if (updates.currentDayOfCycle !== undefined) dbUpdates.current_day_of_cycle = updates.currentDayOfCycle;
 

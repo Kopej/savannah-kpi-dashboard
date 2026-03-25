@@ -34,10 +34,10 @@ export interface CycleData {
   driedCocoonWeightKg?: number;
   reelableCocoonWeightKg?: number;
   reeledSilkWeightKg?: number;
-  cycleDurationDays?: number; // total days for full cycle
-  // Per-cycle editable targets
-  wetCocoonTarget?: number; // kg target
-  currentDayOfCycle?: number; // live tracking
+  cycleDurationDays?: number;
+  completionDate?: string; // ISO date, set when cycle marked finished
+  wetCocoonTarget?: number;
+  currentDayOfCycle?: number;
 }
 
 export interface ComputedKPIs {

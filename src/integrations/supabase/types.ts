@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           avg_shell_ratio: number
           avg_weight_per_wet_cocoon: number
+          completion_date: string | null
           created_at: string
           current_day_of_cycle: number | null
           cycle_duration_days: number | null
@@ -46,6 +47,7 @@ export type Database = {
         Insert: {
           avg_shell_ratio?: number
           avg_weight_per_wet_cocoon?: number
+          completion_date?: string | null
           created_at?: string
           current_day_of_cycle?: number | null
           cycle_duration_days?: number | null
@@ -74,6 +76,7 @@ export type Database = {
         Update: {
           avg_shell_ratio?: number
           avg_weight_per_wet_cocoon?: number
+          completion_date?: string | null
           created_at?: string
           current_day_of_cycle?: number | null
           cycle_duration_days?: number | null
