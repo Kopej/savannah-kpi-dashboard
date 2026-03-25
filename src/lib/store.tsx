@@ -68,6 +68,7 @@ function cycleToDbRow(c: CycleData) {
     reelable_cocoon_weight_kg: c.reelableCocoonWeightKg ?? null,
     reeled_silk_weight_kg: c.reeledSilkWeightKg ?? null,
     cycle_duration_days: c.cycleDurationDays ?? null,
+    completion_date: c.completionDate ?? null,
     wet_cocoon_target: c.wetCocoonTarget ?? null,
     current_day_of_cycle: c.currentDayOfCycle ?? null,
   };
