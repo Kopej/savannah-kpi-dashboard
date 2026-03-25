@@ -1,0 +1,1 @@
+ALTER TABLE public.cycles ADD COLUMN IF NOT EXISTS completion_date TEXT DEFAULT NULL;
