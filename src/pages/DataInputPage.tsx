@@ -10,6 +10,7 @@ import { InstarTargetSettings } from '@/components/InstarTargetSettings';
 export default function DataInputPage() {
   const { user, isAdmin, loading: authLoading } = useAuth();
   const { cycles, loading } = useAppState();
+  const { targets, updateTarget, loading: targetsLoading } = useInstarTargets();
   const [selectedCycleId, setSelectedCycleId] = useState<string>('');
 
   // Auth loading
