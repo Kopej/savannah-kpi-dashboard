@@ -64,6 +64,7 @@ function cycleToDbRow(c: CycleData) {
     hatch_rate_percent: c.hatchRatePercent ?? 0,
     instars: (c.instars ?? []) as unknown as Json,
     dried_cocoon_weight_kg: c.driedCocoonWeightKg ?? null,
+    reelable_cocoon_weight_kg: c.reelableCocoonWeightKg ?? null,
     reeled_silk_weight_kg: c.reeledSilkWeightKg ?? null,
     cycle_duration_days: c.cycleDurationDays ?? null,
     wet_cocoon_target: c.wetCocoonTarget ?? null,
