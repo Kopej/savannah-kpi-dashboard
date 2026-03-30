@@ -103,6 +103,12 @@ export function CycleDataTable({ cycle }: Props) {
   };
 
   const handleSave = () => {
+    // Shell ratio validation: max 25%
+    if (state.avgShellRatio > 25) {
+      toast.error('Shell ratio must be 25% or below. Please correct the value before saving.');
+      return;
+    }
+
     const totalFeed = state.instars.reduce((s, i) => s + i.totalLeafWeightFedG, 0);
     const totalInstarMortality = state.instars.reduce((s, i) => s + i.mortality, 0);
     const preCocooningMort = cycle.hatchedEggs > 0 ? totalInstarMortality / cycle.hatchedEggs : 0;
