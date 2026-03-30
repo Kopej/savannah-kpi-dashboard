@@ -189,7 +189,7 @@ export function FinishedCyclesDashboard({ cycles, assumptions }: Props) {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             <KPICard title="Number of DFLs" value={formatNumber(dflsBrushed)} subtitle={`${assumptions.wormsPerDFL} worms/DFL`} icon={Layers} delay={0} />
-            <KPICard title="Cycle Duration" value={cycleDays > 0 ? `${cycleDays} days` : '—'} subtitle={isMultiSelect ? 'avg across cycles' : 'hatch to harvest'} icon={Calendar} delay={0.03} />
+            <KPICard title="Cycle Duration" value={cycleDays > 0 ? `${cycleDays} days` : '—'} subtitle={isMultiSelect ? 'avg across cycles' : 'hatch to harvest'} target="≤ 45 days" icon={Calendar} delay={0.03} />
             <KPICard title="Total Worm Count" value={formatNumber(totalWormCount)} subtitle="Eggs × Hatch Rate" icon={Bug} delay={0.06} />
             <KPICard title="Total Feed Used" value={`${formatNumber(totalFeedKg, 1)} kg`} subtitle="Leaf + Shoot" icon={Leaf} delay={0.09} />
             <KPICard
