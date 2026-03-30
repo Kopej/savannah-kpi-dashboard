@@ -12,6 +12,8 @@ import { CycleProgressBar } from '@/components/CycleProgressBar';
 import { InstarPerformanceTable } from '@/components/InstarPerformanceTable';
 import { useInstarTargets } from '@/hooks/useInstarTargets';
 
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertTriangle } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
