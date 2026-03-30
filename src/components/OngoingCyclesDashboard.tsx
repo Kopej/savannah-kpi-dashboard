@@ -130,7 +130,20 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
           if (!selectedCycle.totalHarvestedWetCocoonWeight) missingFields.push('Wet Weight – All Cocoons');
           if (!selectedCycle.avgWeightPerWetCocoon) missingFields.push('Avg Weight per Wet Cocoon');
           if (!selectedCycle.avgShellRatio) missingFields.push('Avg Shell Ratio');
+
+          // Bound validations
+          if (selectedCycle.avgShellRatio > 0.25) missingFields.push('Shell Ratio exceeds 25% bound — correct before completing');
+          if (currentDayOfCycle > 45) missingFields.push('Cycle duration exceeds 45-day limit — review before completing');
+
           const canComplete = missingFields.length === 0;
+
+          const handleConfirm = async () => {
+            const success = await markCycleFinished(selectedCycle.id);
+            if (!success) {
+              const { toast } = await import('sonner');
+              toast.error('Cannot complete cycle: duration exceeds 45 days or shell ratio exceeds 25%.');
+            }
+          };
 
           return (
             <AlertDialog>
@@ -151,7 +164,7 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
                     ) : (
                       <div className="space-y-2">
                         <p className="text-destructive font-medium">
-                          Please complete all End of Cycle Summary fields before marking the cycle as complete.
+                          Please resolve the following issues before marking the cycle as complete.
                         </p>
                         <ul className="list-disc pl-5 text-sm text-muted-foreground">
                           {missingFields.map(f => <li key={f}>{f}</li>)}
@@ -163,7 +176,7 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
                 <AlertDialogFooter>
                   <AlertDialogCancel>{canComplete ? 'Cancel' : 'Close'}</AlertDialogCancel>
                   {canComplete && (
-                    <AlertDialogAction onClick={() => markCycleFinished(selectedCycle.id)}>
+                    <AlertDialogAction onClick={handleConfirm}>
                       Confirm
                     </AlertDialogAction>
                   )}
