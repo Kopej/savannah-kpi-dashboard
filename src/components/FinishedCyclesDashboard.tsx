@@ -217,7 +217,7 @@ export function FinishedCyclesDashboard({ cycles, assumptions }: Props) {
             <KPICard title="% Unspun Larvae" value={formatPercent(displayCycle.mortalityCocooning)} target="≤ 5%" icon={CircleOff} trafficLight={getTrafficLight(displayCycle.mortalityCocooning, 'unspunLarvae')} delay={0.17} />
             <KPICard title="Avg Worm Weight" value={`${displayCycle.finalLarvaeWeight.toFixed(2)}g`} target="≥ 5.0g" icon={Weight} trafficLight={getTrafficLight(displayCycle.finalLarvaeWeight, 'wormWeight')} delay={0.18} />
             <KPICard title="Wet Cocoon g/DFL" value={dflsBrushed > 0 ? `${formatNumber(displayCycle.totalHarvestedWetCocoonWeight * 1000 / dflsBrushed, 0)}g` : '—'} target="≥ 1,000g/DFL" icon={Factory} delay={0.21} />
-            <KPICard title="Shell Ratio" value={formatPercent(displayCycle.avgShellRatio)} target="≥ 21%" icon={Scale} trafficLight={getTrafficLight(displayCycle.avgShellRatio, 'shellRatio')} delay={0.24} />
+            <KPICard title="Shell Ratio" value={formatPercent(displayCycle.avgShellRatio)} target="≥ 21% · Bound: ≤ 25%" icon={Scale} trafficLight={getTrafficLight(displayCycle.avgShellRatio, 'shellRatio')} delay={0.24} />
           </div>
         </div>
       )}

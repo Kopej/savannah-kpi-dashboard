@@ -217,18 +217,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (error) console.error('[Store] addCycle error:', error);
   }, []);
 
-  const markCycleFinished = useCallback(async (id: string) => {
+  const markCycleFinished = useCallback(async (id: string): Promise<boolean> => {
     const now = new Date();
     const completionDate = now.toISOString().split('T')[0];
 
-    setCycles(prev => prev.map(c => {
-      if (c.id !== id) return c;
-      const hatch = new Date(c.hatchDate);
-      const durationDays = Math.max(1, Math.round((now.getTime() - hatch.getTime()) / (1000 * 60 * 60 * 24)) + 1);
-      return { ...c, status: 'finished' as const, cycleDurationDays: durationDays, completionDate };
-    }));
-
-    // Compute duration for DB update
     const cycle = cycles.find(c => c.id === id);
     let durationDays: number | null = null;
     if (cycle?.hatchDate) {
@@ -236,12 +228,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
       durationDays = Math.max(1, Math.round((now.getTime() - hatch.getTime()) / (1000 * 60 * 60 * 24)) + 1);
     }
 
+    // Validate cycle duration ≤ 45 days
+    if (durationDays && durationDays > 45) {
+      return false; // caller handles the error message
+    }
+
+    // Validate shell ratio ≤ 25% (stored as decimal, so 0.25)
+    if (cycle && cycle.avgShellRatio > 0.25) {
+      return false;
+    }
+
+    setCycles(prev => prev.map(c => {
+      if (c.id !== id) return c;
+      return { ...c, status: 'finished' as const, cycleDurationDays: durationDays!, completionDate };
+    }));
+
     const { error } = await supabase.from('cycles').update({
       status: 'finished',
       cycle_duration_days: durationDays,
       completion_date: completionDate,
     }).eq('id', id);
     if (error) console.error('[Store] markCycleFinished error:', error);
+    return true;
   }, [cycles]);
 
   const updateCycleData = useCallback(async (id: string, updates: Partial<CycleData>) => {

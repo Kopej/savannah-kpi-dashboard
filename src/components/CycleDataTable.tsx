@@ -344,13 +344,29 @@ export function CycleDataTable({ cycle }: Props) {
             editing={editing}
             step="0.01"
           />
-          <MetricField
-            label="Average Shell Ratio (%)"
-            value={state.avgShellRatio}
-            onChange={v => updateField('avgShellRatio', v)}
-            editing={editing}
-            step="0.1"
-          />
+          <div className="space-y-1.5">
+            <label className="text-[11px] uppercase tracking-wide text-muted-foreground">Average Shell Ratio (%)</label>
+            {editing ? (
+              <div>
+                <Input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  max="25"
+                  value={state.avgShellRatio || ''}
+                  onChange={e => updateField('avgShellRatio', parseFloat(e.target.value) || 0)}
+                  className={`h-9 ${state.avgShellRatio > 25 ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+                />
+                {state.avgShellRatio > 25 && (
+                  <p className="text-[11px] text-destructive mt-1 font-medium">Must be ≤ 25%</p>
+                )}
+              </div>
+            ) : (
+              <div className="h-9 flex items-center px-3 rounded-md bg-muted/30 text-sm font-medium text-foreground">
+                {state.avgShellRatio || '—'}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

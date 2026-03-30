@@ -174,6 +174,16 @@ export function OngoingCyclesDashboard({ cycles, assumptions }: Props) {
         })()}
       </div>
 
+      {/* Overdue duration alert */}
+      {selectedCycle && currentDayOfCycle > 45 && (
+        <Alert variant="destructive" className="border-destructive/50 bg-destructive/5">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription className="font-medium">
+            Cycle duration alert: this cycle is at Day {currentDayOfCycle}, past the 45-day acceptable threshold.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Cycle Progress Bar */}
       {selectedCycle && currentDayOfCycle > 0 && (
         <CycleProgressBar cycle={selectedCycle} currentDay={currentDayOfCycle} />
