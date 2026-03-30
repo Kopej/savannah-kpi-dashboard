@@ -1,3 +1,4 @@
+// Store — global app state with Supabase persistence
 import React, { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import type { CycleData, Ticket, Assumptions, DailyLog, InstarData } from './types';
 import { SEED_CYCLES } from './seedData';
